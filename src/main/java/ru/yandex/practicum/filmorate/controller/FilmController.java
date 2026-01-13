@@ -5,38 +5,54 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @RestController
 @RequestMapping("/films")
 public class FilmController {
     private static final Logger log = LoggerFactory.getLogger(FilmController.class);
-    private final List<Film> films = new ArrayList<>();
+    private int nextId = 1;
+    private final Map<Integer, Film> films = new HashMap<>();
     private static final LocalDate RELEASE_DATE =
             LocalDate.of(1895, 12, 28);
 
     @GetMapping
-    public List<Film> findAll() {
+    public Collection<Film> findAll() {
         log.debug("Текущее количество фильмов: {}", films.size());
-        return films;
+        return films.values();
     }
 
     @PostMapping
     public Film createFilm(@RequestBody Film film) {
+        film.setId(nextId++);
         validateFilm(film);
-        films.add(film);
+        films.put(film.getId(), film);
         return film;
     }
 
     @PutMapping
     public Film putFilm(@RequestBody Film film) {
-        validateFilm(film);
-        films.add(film);
 
-        return film;
+        if (film.getId() <= 0) {
+            throw new ValidationException("Id фильма должен быть указан");
+        }
+
+        Film existingFilm = films.get(film.getId());
+        if (existingFilm == null) {
+            throw new ValidationException("Фильм с id=" + film.getId() + " не найден");
+        }
+
+        validateFilm(film);
+
+        existingFilm.setName(film.getName());
+        existingFilm.setDescription(film.getDescription());
+        existingFilm.setReleaseDate(film.getReleaseDate());
+        existingFilm.setDuration(film.getDuration());
+        //films.put(existingFilm.getId(), existingFilm);
+        return existingFilm;
     }
 
     private void validateFilm(Film film){
