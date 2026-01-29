@@ -1,11 +1,7 @@
 package ru.yandex.practicum.filmorate.repository;
 
-//Создайте интерфейсы FilmStorage и UserStorage, в которых будут определены методы добавления, удаления и
-// модификации объектов.
-
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.Collection;
 import java.util.List;
 
 public interface UserStorage {
@@ -13,7 +9,7 @@ public interface UserStorage {
 
     void deleteUser(int userID);
 
-    void checkEmail(User user);
+    void validateEmailFormat(User user);
 
     User updateUser(User user);
 
@@ -27,5 +23,5 @@ public interface UserStorage {
 
     List<User> getCommonFriends(Integer userId, Integer otherId);
 
-    Collection<User> findAll();
+    List<User> getAllUsers();
 }

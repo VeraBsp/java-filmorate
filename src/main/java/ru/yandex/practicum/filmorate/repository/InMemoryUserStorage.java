@@ -4,11 +4,8 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
-import ru.yandex.practicum.filmorate.exception.InvalidEmailException;
-import ru.yandex.practicum.filmorate.exception.UserAlreadyExistException;
-import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
@@ -16,20 +13,20 @@ import java.util.stream.Collectors;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
-    private static final Logger log = LoggerFactory.getLogger(UserController.class);
+    private static final Logger log = LoggerFactory.getLogger(InMemoryUserStorage.class);
     private final Map<Integer, User> userStorage = new HashMap<>();
     private int nextIdUser = 1;
 
 
     @Override
     public User createUser(@Valid User user) {
-        checkEmail(user);
+        validateEmailFormat(user);
         boolean emailExists = userStorage.values().stream()
                 .anyMatch(u -> u.getEmail().equalsIgnoreCase(user.getEmail()));
 
         if (emailExists) {
             log.info("Пользователь с электронной почтой уже зарегистрирован.");
-            throw new UserAlreadyExistException(String.format(
+            throw new IncorrectParameterException(String.format(
                     "Пользователь с электронной почтой %s уже зарегистрирован.",
                     user.getEmail()
             ));
@@ -46,42 +43,42 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public void deleteUser(int userId) {
-        if (userStorage.containsKey(userId)) {
-            userStorage.remove(userId);
-        } else {
-            log.info("Id пользователя указан некорректно");
+        User removed = userStorage.remove(userId);
+        if (removed == null) {
+            log.warn("Id пользователя указан некорректно");
             throw new IncorrectParameterException("Id пользователя указан некорректно");
         }
     }
 
     @Override
-    public void checkEmail(User user) {
-        if (user.getEmail() == null || user.getEmail().isBlank()) {
-            log.info("Адрес электронной почты не может быть пустым.");
-            throw new InvalidEmailException("Адрес электронной почты не может быть пустым.");
+    public void validateEmailFormat(User user) {
+        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
+            log.warn("Некорректный адрес электронной почты.");
+            throw new IncorrectParameterException("Некорректный адрес электронной почты.");
         }
     }
 
     @Override
     public User updateUser(@Valid User user) {
-        checkEmail(user);
+        validateEmailFormat(user);
         if (user.getId() <= 0) {
-            log.info("Id пользователя должен быть указан");
+            log.warn("Id пользователя должен быть указан");
             throw new IncorrectParameterException("Id пользователя указан некорректно");
         }
 
         User existingUser = userStorage.get(user.getId());
         if (existingUser == null) {
-            log.info("Пользователь с id=" + user.getId() + " не найден");
-            throw new UserNotFoundException("Пользователь с id=" + user.getId() + " не найден");
+            log.warn("Пользователь с id=" + user.getId() + " не найден");
+            throw new ObjectNotFoundException("Пользователь с id=" + user.getId() + " не найден");
         }
         if (user.getName() == null || user.getName().isBlank()) {
             existingUser.setName(user.getLogin());
+        } else {
+            existingUser.setName(user.getName());
+            existingUser.setLogin(user.getLogin());
+            existingUser.setEmail(user.getEmail());
+            existingUser.setBirthday(user.getBirthday());
         }
-        existingUser.setName(user.getName());
-        existingUser.setLogin(user.getLogin());
-        existingUser.setEmail(user.getEmail());
-        existingUser.setBirthday(user.getBirthday());
         return existingUser;
     }
 
@@ -89,16 +86,24 @@ public class InMemoryUserStorage implements UserStorage {
     public User findUserById(int userId) {
         User user = userStorage.get(userId);
         if (user == null) {
-            log.info("Пользователь с id=" + userId + " не найден");
-            throw new UserNotFoundException("Пользователь с id=" + userId + " не найден");
+            log.warn("Пользователь с id=" + userId + " не найден");
+            throw new ObjectNotFoundException("Пользователь с id=" + userId + " не найден");
         }
         return user;
     }
 
     @Override
     public void addFriends(Integer userId, Integer friendId) {
+        if (userId.equals(friendId)) {
+            log.warn("Указаны одинаковые Id пользователей. Попытка добавления самого себя в друзья");
+            throw new IncorrectParameterException("Указаны одинаковые Id пользователей. Попытка добавления самого себя в друзья");
+        }
         User user = findUserById(userId);
         User friend = findUserById(friendId);
+        if (user.getFriends().contains(friendId)) {
+            log.info("Пользователи уже друзья");
+            throw new IncorrectParameterException("Пользователи уже друзья");
+        }
         user.getFriends().add(friendId);
         friend.getFriends().add(userId);
     }
@@ -113,12 +118,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<User> getFriendsThisUser(Integer userId) {
-        User user = userStorage.get(userId);
-        if (user == null) {
-            log.info("Пользователь с id=" + userId + " не найден");
-            throw new UserNotFoundException("Пользователь с id=" + userId + " не найден");
-        }
-
+        User user = findUserById(userId);
         return user.getFriends().stream()
                 .map(userStorage::get)
                 .filter(Objects::nonNull)
@@ -129,17 +129,14 @@ public class InMemoryUserStorage implements UserStorage {
     public List<User> getCommonFriends(Integer userId, Integer otherId) {
         User user = findUserById(userId);
         User otherUser = findUserById(otherId);
-        List<User> commonFriend = new ArrayList<>();
-        for (Integer friendUserId : user.getFriends()) {
-            if (otherUser.getFriends().contains(friendUserId)) {
-                commonFriend.add(userStorage.get(friendUserId));
-            }
-        }
-        return commonFriend;
+        return user.getFriends().stream()
+                .filter(e -> otherUser.getFriends().contains(e))
+                .map(id -> findUserById(id))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Collection<User> findAll() {
-        return userStorage.values();
+    public List<User> getAllUsers() {
+        return new ArrayList<>(userStorage.values());
     }
 }

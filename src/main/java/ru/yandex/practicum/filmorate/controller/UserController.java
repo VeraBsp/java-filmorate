@@ -21,8 +21,8 @@ public class UserController {
 
 
     @GetMapping
-    public Collection<User> findAll() {
-        return userService.findAll();
+    public Collection<User> getAllUsers() {
+        return userService.getAllUsers();
     }
 
     @PostMapping
@@ -36,7 +36,7 @@ public class UserController {
     }
 
     @PutMapping("{id}/friends/{friendId}")
-    public void addFriendUser(@PathVariable("id") int id, @PathVariable("friendId") int friendId) {
+    public void addFriend(@PathVariable("id") int id, @PathVariable("friendId") int friendId) {
         userService.addFriend(id, friendId);
     }
 

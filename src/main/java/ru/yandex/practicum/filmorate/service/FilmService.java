@@ -1,18 +1,17 @@
 package ru.yandex.practicum.filmorate.service;
 
-import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
 
-import java.util.Collection;
 import java.util.List;
 
 @Service
 public class FilmService {
     FilmStorage filmStorage;
 
+    @Autowired
     public FilmService(FilmStorage filmStorage) {
         this.filmStorage = filmStorage;
     }
@@ -21,11 +20,11 @@ public class FilmService {
         return filmStorage.createFilm(film);
     }
 
-    public Collection<Film> findAll() {
-        return filmStorage.findAll();
+    public List<Film> getAllFilm() {
+        return filmStorage.getAllFilm();
     }
 
-    public Film updateFilm(@Valid @RequestBody Film film) {
+    public Film updateFilm(Film film) {
         return filmStorage.updateFilm(film);
     }
 

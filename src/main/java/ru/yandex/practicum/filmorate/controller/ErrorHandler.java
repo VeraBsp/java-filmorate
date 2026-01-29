@@ -15,22 +15,16 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleIncorrectParameterException(final IncorrectParameterException e) {
+        log.warn("Неверный параметр");
         return new ErrorResponse(
-                String.format("Ошибка с полем \"%s\".", e.getParameter())
-        );
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleInvalidEmailException(final InvalidEmailException e) {
-        return new ErrorResponse(
-                e.getMessage()
+                String.format("Неверный параметр \"%s\".", e.getParameter())
         );
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleUserNotFoundException(final UserNotFoundException e) {
+    public ErrorResponse handleObjectNotFoundException(final ObjectNotFoundException e) {
+        log.warn("Объект с заданным id не найден");
         return new ErrorResponse(
                 e.getMessage()
         );
@@ -39,36 +33,7 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleUserAlreadyExistException(final UserAlreadyExistException e) {
-        return new ErrorResponse(
-                e.getMessage()
-        );
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleFilmNotFoundException(final FilmNotFoundException e) {
-        return new ErrorResponse(e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleInvalidFilmDurationException(final InvalidFilmDurationException e) {
-        return new ErrorResponse(
-                e.getMessage()
-        );
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleInvalidFilmNameException(final InvalidFilmNameException e) {
-        return new ErrorResponse(
-                e.getMessage()
-        );
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleFilmReleaseDateIvalid(final FilmReleaseDateIvalid e) {
+        log.warn("Пользователь с электронной почтой уже зарегистрирован.");
         return new ErrorResponse(
                 e.getMessage()
         );
@@ -77,7 +42,7 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleThrowable(final MethodArgumentNotValidException e) {
-        log.info("Validation failed for argument");
+        log.warn("Validation failed for argument");
         return new ErrorResponse(
                 "Validation failed for argument"
         );
@@ -86,6 +51,7 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleThrowable(final Throwable e) {
+        log.error("Произошла непредвиденная ошибка.");
         return new ErrorResponse(
                 "Произошла непредвиденная ошибка." + e.getMessage()
         );
