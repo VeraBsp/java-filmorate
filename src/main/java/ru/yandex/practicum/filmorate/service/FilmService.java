@@ -9,7 +9,7 @@ import java.util.List;
 
 @Service
 public class FilmService {
-    FilmStorage filmStorage;
+    private final FilmStorage filmStorage;
 
     @Autowired
     public FilmService(FilmStorage filmStorage) {

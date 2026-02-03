@@ -9,7 +9,7 @@ import java.util.List;
 
 @Service
 public class UserService {
-    UserStorage userStorage;
+    private final UserStorage userStorage;
 
     @Autowired
     public UserService(UserStorage userStorage) {

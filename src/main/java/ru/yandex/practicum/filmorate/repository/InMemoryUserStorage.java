@@ -17,25 +17,26 @@ public class InMemoryUserStorage implements UserStorage {
     private final Map<Integer, User> userStorage = new HashMap<>();
     private int nextIdUser = 1;
 
+    private void validateEmailUniqueness(User user) {
+        boolean emailExists = userStorage.values().stream()
+                .anyMatch(u -> u.getEmail().equalsIgnoreCase(user.getEmail())
+                        && u.getId() != user.getId());
+
+        if (emailExists) {
+            log.info("Пользователь с электронной почтой уже зарегистрирован.");
+            throw new IncorrectParameterException(
+                    String.format("Пользователь с электронной почтой %s уже зарегистрирован.", user.getEmail())
+            );
+        }
+    }
 
     @Override
     public User createUser(@Valid User user) {
         validateEmailFormat(user);
-        boolean emailExists = userStorage.values().stream()
-                .anyMatch(u -> u.getEmail().equalsIgnoreCase(user.getEmail()));
-
-        if (emailExists) {
-            log.info("Пользователь с электронной почтой уже зарегистрирован.");
-            throw new IncorrectParameterException(String.format(
-                    "Пользователь с электронной почтой %s уже зарегистрирован.",
-                    user.getEmail()
-            ));
-        }
-
+        validateEmailUniqueness(user);
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-
         user.setId(nextIdUser++);
         userStorage.put(user.getId(), user);
         return user;
@@ -65,20 +66,20 @@ public class InMemoryUserStorage implements UserStorage {
             log.warn("Id пользователя должен быть указан");
             throw new IncorrectParameterException("Id пользователя указан некорректно");
         }
-
         User existingUser = userStorage.get(user.getId());
         if (existingUser == null) {
             log.warn("Пользователь с id=" + user.getId() + " не найден");
             throw new ObjectNotFoundException("Пользователь с id=" + user.getId() + " не найден");
         }
+        validateEmailUniqueness(user);
         if (user.getName() == null || user.getName().isBlank()) {
             existingUser.setName(user.getLogin());
         } else {
             existingUser.setName(user.getName());
-            existingUser.setLogin(user.getLogin());
-            existingUser.setEmail(user.getEmail());
-            existingUser.setBirthday(user.getBirthday());
         }
+        existingUser.setLogin(user.getLogin());
+        existingUser.setEmail(user.getEmail());
+        existingUser.setBirthday(user.getBirthday());
         return existingUser;
     }
 
