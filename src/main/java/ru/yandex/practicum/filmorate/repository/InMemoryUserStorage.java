@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
@@ -95,45 +94,47 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public void addFriends(Integer userId, Integer friendId) {
-        if (userId.equals(friendId)) {
-            log.warn("Указаны одинаковые Id пользователей. Попытка добавления самого себя в друзья");
-            throw new IncorrectParameterException("Указаны одинаковые Id пользователей. Попытка добавления самого себя в друзья");
-        }
-        User user = findUserById(userId);
-        User friend = findUserById(friendId);
-        if (user.getFriends().contains(friendId)) {
-            log.info("Пользователи уже друзья");
-            throw new IncorrectParameterException("Пользователи уже друзья");
-        }
-        user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
+//        if (userId.equals(friendId)) {
+//            log.warn("Указаны одинаковые Id пользователей. Попытка добавления самого себя в друзья");
+//            throw new IncorrectParameterException("Указаны одинаковые Id пользователей. Попытка добавления самого себя в друзья");
+//        }
+//        User user = findUserById(userId);
+//        User friend = findUserById(friendId);
+//        if (user.getFriends().contains(friendId)) {
+//            log.info("Пользователи уже друзья");
+//            throw new IncorrectParameterException("Пользователи уже друзья");
+//        }
+//        user.getFriends().add(friendId);
+//        friend.getFriends().add(userId);
     }
 
     @Override
     public void deleteFriends(Integer userId, Integer friendId) {
-        User user = findUserById(userId);
-        User friend = findUserById(friendId);
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(userId);
+//        User user = findUserById(userId);
+//        User friend = findUserById(friendId);
+//        user.getFriends().remove(friendId);
+//        friend.getFriends().remove(userId);
     }
 
     @Override
     public List<User> getFriendsThisUser(Integer userId) {
-        User user = findUserById(userId);
-        return user.getFriends().stream()
-                .map(userStorage::get)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+//        User user = findUserById(userId);
+//        return user.getFriends().stream()
+//                .map(userStorage::get)
+//                .filter(Objects::nonNull)
+//                .collect(Collectors.toList());
+        return List.of();
     }
 
     @Override
     public List<User> getCommonFriends(Integer userId, Integer otherId) {
-        User user = findUserById(userId);
-        User otherUser = findUserById(otherId);
-        return user.getFriends().stream()
-                .filter(e -> otherUser.getFriends().contains(e))
-                .map(id -> findUserById(id))
-                .collect(Collectors.toList());
+//        User user = findUserById(userId);
+//        User otherUser = findUserById(otherId);
+//        return user.getFriends().stream()
+//                .filter(e -> otherUser.getFriends().contains(e))
+//                .map(id -> findUserById(id))
+//                .collect(Collectors.toList());
+        return List.of();
     }
 
     @Override

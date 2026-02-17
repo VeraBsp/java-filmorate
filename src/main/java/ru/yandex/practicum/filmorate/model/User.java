@@ -8,8 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * User.
@@ -27,5 +25,6 @@ public class User {
     String name;
     @PastOrPresent(message = "Дата рождения не может быть в будущем")
     LocalDate birthday;
-    private Set<Integer> friends = new HashSet<>();
+   // private Set<Integer> friends = new HashSet<>();
+   // private FriendsStatus friendsStatus;
 }

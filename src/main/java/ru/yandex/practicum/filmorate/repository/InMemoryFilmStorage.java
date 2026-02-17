@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -21,7 +22,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     private final UserStorage userStorage;
 
     @Autowired
-    public InMemoryFilmStorage(UserStorage userStorage) {
+    public InMemoryFilmStorage(@Qualifier("userDbStorage") UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
@@ -73,7 +74,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film addLikeFilm(int filmId, int userId) {
         User user = userStorage.findUserById(userId);
         Film film = findFilmById(filmId);
-        film.getLikes().add(user.getId());
+       // film.getLikes().add(user.getId());
         return film;
     }
 
@@ -97,15 +98,16 @@ public class InMemoryFilmStorage implements FilmStorage {
     public void deleteLikeFilm(Integer id, Integer userId) {
         User user = userStorage.findUserById(userId);
         Film film = findFilmById(id);
-        film.getLikes().remove(user.getId());
+     //   film.getLikes().remove(user.getId());
     }
 
     @Override
     public List<Film> getPopularFilm(int count) {
-        return filmsStorage.values()
-                .stream()
-                .sorted(Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed())
-                .limit(count)
-                .toList();
+        return List.of();
+//        return filmsStorage.values()
+//                .stream()
+//                .sorted(Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed())
+//                .limit(count)
+//                .toList();
     }
 }
