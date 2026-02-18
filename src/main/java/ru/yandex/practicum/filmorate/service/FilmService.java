@@ -13,12 +13,16 @@ public class FilmService {
     private final FilmStorage filmStorage;
 
     @Autowired
-    public FilmService(@Qualifier("filmDbStorage")FilmStorage filmStorage) {
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage) {
         this.filmStorage = filmStorage;
     }
 
     public Film createFilm(Film film) {
         return filmStorage.createFilm(film);
+    }
+
+    public Film findFilmById(int id) {
+        return filmStorage.findFilmById(id);
     }
 
     public List<Film> getAllFilm() {

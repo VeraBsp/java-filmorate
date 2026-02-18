@@ -23,6 +23,11 @@ public class FilmController {
         return filmService.getAllFilm();
     }
 
+    @GetMapping("/{id}")
+    public Film findFilmById(@PathVariable int id) {
+        return filmService.findFilmById(id);
+    }
+
     @PostMapping
     public Film createFilm(@Valid @RequestBody Film film) {
         return filmService.createFilm(film);

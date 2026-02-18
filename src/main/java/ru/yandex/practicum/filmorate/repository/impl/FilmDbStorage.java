@@ -6,11 +6,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
+import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
@@ -18,15 +18,13 @@ import ru.yandex.practicum.filmorate.repository.FilmStorage;
 import ru.yandex.practicum.filmorate.repository.UserStorage;
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.*;
 
 @Component
 public class FilmDbStorage implements FilmStorage {
-    private final Logger log = LoggerFactory.getLogger(UserDbStorage.class);
+    private final Logger log = LoggerFactory.getLogger(FilmDbStorage.class);
     private static final LocalDate RELEASE_DATE = LocalDate.of(1895, 12, 28);
     private final JdbcTemplate jdbcTemplate;
     private final UserStorage userStorage;
@@ -41,7 +39,7 @@ public class FilmDbStorage implements FilmStorage {
     @Transactional
     public Film createFilm(Film film) {
         checkFieldsFilm(film);
-        validateRatingExists(film.getRating().getRatingId());
+        validateRatingExists(film.getMpa().getId());
         String sql = """
                 INSERT INTO films (film_name, description, duration, release_date, rating_id)
                 VALUES (?, ?, ?, ?, ?)
@@ -53,7 +51,7 @@ public class FilmDbStorage implements FilmStorage {
             ps.setString(2, film.getDescription());
             ps.setInt(3, film.getDuration());
             ps.setDate(4, java.sql.Date.valueOf(film.getReleaseDate()));
-            ps.setInt(5, film.getRating().getRatingId());
+            ps.setInt(5, film.getMpa().getId());
             return ps;
         }, keyHolder);
         int filmId = keyHolder.getKey().intValue();
@@ -119,7 +117,7 @@ public class FilmDbStorage implements FilmStorage {
                             rs.getInt("rating_id"),
                             rs.getString("rating_title")
                     );
-                    film.setRating(rating);
+                    film.setMpa(rating);
 
                     film.setGenres(new HashSet<>());
 
@@ -140,8 +138,35 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    @Transactional
     public Film updateFilm(Film film) {
-        return null;
+        if (film.getId() <= 0) {
+            throw new IncorrectParameterException("Id фильма указан некорректно");
+        }
+        findFilmById(film.getId());
+        validateRatingExists(film.getMpa().getId());
+        String sql = """
+                UPDATE films
+                SET film_name = ?, 
+                    description = ?, 
+                    release_date = ?, 
+                    duration = ?, 
+                    rating_id = ?
+                WHERE film_id = ?
+                """;
+        int rows = jdbcTemplate.update(sql,
+                film.getName(),
+                film.getDescription(),
+                film.getReleaseDate(),
+                film.getDuration(),
+                film.getMpa().getId(),
+                film.getId()
+        );
+        if (rows == 0) {
+            throw new ObjectNotFoundException("Фильм с id=" + film.getId() + " не найден");
+        }
+        updateFilmGenres(film.getId(), film.getGenres());
+        return findFilmById(film.getId());
     }
 
     @Override
@@ -164,6 +189,7 @@ public class FilmDbStorage implements FilmStorage {
                 LEFT JOIN film_genre fg ON f.film_id = fg.film_id
                 LEFT JOIN genres g ON fg.genre_id = g.genre_id
                 WHERE f.film_id = ?
+                ORDER BY g.genre_id
                 """;
         return jdbcTemplate.query(sql, rs -> {
 
@@ -179,27 +205,31 @@ public class FilmDbStorage implements FilmStorage {
                     film.setDescription(rs.getString("description"));
                     film.setReleaseDate(rs.getDate("release_date").toLocalDate());
                     film.setDuration(rs.getInt("duration"));
-                    Rating rating = new Rating(
-                            rs.getInt("rating_id"),
-                            rs.getString("rating_title")
-                    );
-                    film.setRating(rating);
+                    int ratingId = rs.getInt("rating_id");
+                    if (!rs.wasNull()) {
+                        Rating rating = new Rating(
+                                ratingId,
+                                rs.getString("rating_title")
+                        );
+                        film.setMpa(rating);
+                    }
 
-                    film.setGenres(new HashSet<>());
-                }
-                int genreId = rs.getInt("genre_id");
-                if (!rs.wasNull()) {
-                    Genre genre = new Genre(
-                            genreId,
-                            rs.getString("genre_title")
-                    );
+                        film.setGenres(new LinkedHashSet<>());
+                    }
+
+                    int genreId = rs.getInt("genre_id");
+                    if (!rs.wasNull()) {
+                        Genre genre = new Genre(
+                                genreId,
+                                rs.getString("genre_title")
+                        );
                     film.getGenres().add(genre);
                 }
             }
 
             if (film == null) {
                 log.warn("Фильм с id={} не найден", filmId);
-                throw new IncorrectParameterException("Фильм не найден");
+                throw new ObjectNotFoundException("Фильм с id=" + filmId + " не найден");
             }
             return film;
 
@@ -212,10 +242,10 @@ public class FilmDbStorage implements FilmStorage {
         userStorage.findUserById(userId);
 
         String checkSql = """
-            SELECT COUNT(*) 
-            FROM film_like 
-            WHERE film_id = ? AND user_id = ?
-            """;
+                SELECT COUNT(*) 
+                FROM film_like 
+                WHERE film_id = ? AND user_id = ?
+                """;
         Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, filmId, userId);
         if (count != null && count > 0) {
             log.debug("Лайк уже существует: filmId={}, userId={}", filmId, userId);
@@ -242,7 +272,7 @@ public class FilmDbStorage implements FilmStorage {
             log.warn("Дата релиза не может быть раньше 28 декабря 1895 года");
             throw new IncorrectParameterException("Дата релиза не может быть раньше 28 декабря 1895 года");
         }
-        if (film.getRating() == null) {
+        if (film.getMpa() == null) {
             log.warn("Рейтинг обязателен");
             throw new IncorrectParameterException("Рейтинг обязателен");
         }
@@ -265,13 +295,13 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getPopularFilm(int count) {
         String sql = """
-            SELECT f.film_id
-            FROM films f
-            LEFT JOIN film_like fl ON f.film_id = fl.film_id
-            GROUP BY f.film_id
-            ORDER BY COUNT(fl.user_id) DESC
-            LIMIT ?
-            """;
+                SELECT f.film_id
+                FROM films f
+                LEFT JOIN film_like fl ON f.film_id = fl.film_id
+                GROUP BY f.film_id
+                ORDER BY COUNT(fl.user_id) DESC
+                LIMIT ?
+                """;
         List<Integer> idPopularFilms = jdbcTemplate.queryForList(sql, Integer.class, count);
         return idPopularFilms.stream()
                 .map(id -> findFilmById(id))
@@ -284,7 +314,7 @@ public class FilmDbStorage implements FilmStorage {
 
         if (count == null || count == 0) {
             log.warn("Жанр с id={} не найден", genreId);
-            throw new IncorrectParameterException("Жанр с id=" + genreId + " не найден");
+            throw new ObjectNotFoundException("Жанр с id=" + genreId + " не найден");
         }
     }
 
@@ -293,7 +323,7 @@ public class FilmDbStorage implements FilmStorage {
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, ratingId);
 
         if (count == null || count == 0) {
-            throw new IncorrectParameterException("Рейтинг с id=" + ratingId + " не найден");
+            throw new ObjectNotFoundException("Рейтинг с id=" + ratingId + " не найден");
         }
     }
 
@@ -305,8 +335,21 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
 
         for (Genre genre : genres) {
-            validateGenreExists(genre.getGenreId());
-            jdbcTemplate.update(sql, filmId, genre.getGenreId());
+            validateGenreExists(genre.getId());
+            jdbcTemplate.update(sql, filmId, genre.getId());
+        }
+    }
+
+    private void updateFilmGenres(int filmId, Set<Genre> genres) {
+        String deleteSql = "DELETE FROM film_genre WHERE film_id = ?";
+        jdbcTemplate.update(deleteSql, filmId);
+        if (genres == null || genres.isEmpty()) {
+            return;
+        }
+        String insertSql = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
+        for (Genre genre : genres) {
+            validateGenreExists(genre.getId());
+            jdbcTemplate.update(insertSql, filmId, genre.getId());
         }
     }
 }

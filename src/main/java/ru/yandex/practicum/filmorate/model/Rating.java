@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Rating {
-    private int ratingId;
-    private String ratingTitle;
+    private int id;
+    private String name;
 }

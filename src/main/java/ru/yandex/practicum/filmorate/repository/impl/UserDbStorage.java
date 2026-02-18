@@ -8,9 +8,11 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
+import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.UserStorage;
 
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.time.LocalDate;
@@ -65,41 +67,44 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User updateUser(User user) {
         validateEmailFormat(user);
-        validateEmailUniquenessForUpdate(user);
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
+        if (user.getId() <= 0) {
+            throw new IncorrectParameterException("Id пользователя указан некорректно");
         }
+        validateEmailUniquenessForUpdate(user);
         String sql = """
                 UPDATE users
-                SET name = ?, email = ?, birthday = ?
+                SET name = ?, login = ?, email = ?, birthday = ?
                 WHERE user_id = ?
                 """;
-        int rowsAffected = jdbcTemplate.update(sql,
-                user.getName(),
-                user.getEmail(),
+        int rows = jdbcTemplate.update(sql,
+                user.getName() == null || user.getName().isBlank()
+                        ? user.getLogin()
+                        : user.getName(),
                 user.getLogin(),
-                java.sql.Date.valueOf(user.getBirthday()),
+                user.getEmail(),
+                Date.valueOf(user.getBirthday()),
                 user.getId()
         );
-        if (rowsAffected == 0) {
-            log.warn("Пользователь с id={} не найден для обновления.", user.getId());
-            throw new IncorrectParameterException("Пользователь с указанным id не найден.");
+        if (rows == 0) {
+            throw new ObjectNotFoundException("Пользователь с id=" + user.getId() + " не найден");
         }
-        log.warn("Обновлен пользователь: {} (id={})", user.getName(), user.getId());
-        return user;
+        return findUserById(user.getId());
     }
 
     @Override
     public User findUserById(int userId) {
         List<User> users = jdbcTemplate.query("select * from users where user_id = ?", userRowMapper(), userId);
-        if (users.size() != 1) {
-            throw new RuntimeException("Ожидалась 1 запись а вернулось " + users.size());
+        if (users.isEmpty()) {
+            log.warn("Пользователь с id=" + userId + " не найден");
+            throw new ObjectNotFoundException("Пользователь с id=" + userId + " не найден");
         }
         return users.get(0);
     }
 
     @Override
     public void addFriends(Integer userId, Integer friendId) {
+        findUserById(userId);
+        findUserById(friendId);
         if (userId.equals(friendId)) {
             log.warn("Нельзя добавить себя в друзья.");
             throw new IncorrectParameterException("Нельзя добавить себя в друзья.");
@@ -110,7 +115,7 @@ public class UserDbStorage implements UserStorage {
         if (count != null && count > 0) {
             log.info("Пользователь с id={} уже является другом пользователя id={}", friendId, userId);
             throw new IncorrectParameterException("Пользователи уже друзья.");
-        //    return;
+            //    return;
         }
         String sql = "INSERT INTO friends (user_id, friend_id, friend_status_id) VALUES (?, ?, ?)";
         jdbcTemplate.update(sql, userId, friendId, 2);
@@ -119,41 +124,35 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void deleteFriends(Integer userId, Integer friendId) {
+        findUserById(userId);
+        findUserById(friendId);
         String sql = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
-        int rowsAffected = jdbcTemplate.update(sql, userId, friendId);
-        if (rowsAffected == 0) {
-            log.warn("Связь дружбы между пользователем id={} и пользователем id={} не найдена.", userId, friendId);
-            throw new IncorrectParameterException(
-                    String.format("Связь дружбы между пользователем id=%d и пользователем id=%d не найдена.", userId, friendId)
-            );
-        }
+        jdbcTemplate.update(sql, userId, friendId);
         log.info("Пользователь с id={} удалён из друзей пользователя id={}", friendId, userId);
     }
 
 
     @Override
     public List<User> getFriendsThisUser(Integer userId) {
+        findUserById(userId);
         String sql = """
-                SELECT uf.user_id,
-                       uf.name,
-                       uf.email,
-                       uf.login,
-                       uf.birthday
-                FROM friends f
-                JOIN users uf ON f.friend_id = uf.user_id
-                WHERE f.user_id = ?
-                  AND f.friend_status_id = ?
-                """;
-        List<User> friends = jdbcTemplate.query(
+            SELECT uf.user_id,
+                   uf.name,
+                   uf.email,
+                   uf.login,
+                   uf.birthday
+            FROM friends f
+            JOIN users uf ON f.friend_id = uf.user_id
+            WHERE f.user_id = ?
+              AND f.friend_status_id = ?
+            """;
+
+        return jdbcTemplate.query(
                 sql,
                 userRowMapper(),
                 userId,
                 2
         );
-        if (friends.isEmpty()) {
-            log.warn("Список друзей для пользователя с id={} пуст или пользователь указан некорректно", userId);
-        }
-        return friends;
     }
 
     @Override
@@ -208,8 +207,9 @@ public class UserDbStorage implements UserStorage {
     private RowMapper<User> userRowMapper() {
         return (rs, rowNum) -> new User(
                 rs.getInt("user_id"),
-                rs.getString("name"), rs.getString("email"),
+                rs.getString("email"),
                 rs.getString("login"),
+                rs.getString("name"),
                 LocalDate.parse(rs.getString("birthday"))
         );
     }
