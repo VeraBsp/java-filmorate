@@ -18,7 +18,7 @@ import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.List;
 
-@Component
+@Component("userDbStorage")
 public class UserDbStorage implements UserStorage {
     private final Logger log = LoggerFactory.getLogger(UserDbStorage.class);
 
@@ -157,6 +157,8 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getCommonFriends(Integer userId, Integer otherId) {
+        findUserById(userId);
+        findUserById(otherId);
         String sql = """
                 SELECT u.user_id,
                        u.name,

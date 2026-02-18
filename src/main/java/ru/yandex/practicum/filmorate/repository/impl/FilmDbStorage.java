@@ -22,7 +22,7 @@ import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.*;
 
-@Component
+@Component("filmDbStorage")
 public class FilmDbStorage implements FilmStorage {
     private final Logger log = LoggerFactory.getLogger(FilmDbStorage.class);
     private static final LocalDate RELEASE_DATE = LocalDate.of(1895, 12, 28);
