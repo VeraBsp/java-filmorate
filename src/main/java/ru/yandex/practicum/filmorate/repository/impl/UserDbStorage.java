@@ -45,7 +45,7 @@ public class UserDbStorage implements UserStorage {
             ps.setString(1, user.getName());
             ps.setString(2, user.getEmail());
             ps.setString(3, user.getLogin());
-            ps.setDate(4, java.sql.Date.valueOf(user.getBirthday())); // LocalDate → DATE
+            ps.setDate(4, java.sql.Date.valueOf(user.getBirthday()));
             return ps;
         }, keyHolder);
         user.setId(keyHolder.getKey().intValue());
@@ -136,16 +136,16 @@ public class UserDbStorage implements UserStorage {
     public List<User> getFriendsThisUser(Integer userId) {
         findUserById(userId);
         String sql = """
-            SELECT uf.user_id,
-                   uf.name,
-                   uf.email,
-                   uf.login,
-                   uf.birthday
-            FROM friends f
-            JOIN users uf ON f.friend_id = uf.user_id
-            WHERE f.user_id = ?
-              AND f.friend_status_id = ?
-            """;
+                SELECT uf.user_id,
+                       uf.name,
+                       uf.email,
+                       uf.login,
+                       uf.birthday
+                FROM friends f
+                JOIN users uf ON f.friend_id = uf.user_id
+                WHERE f.user_id = ?
+                  AND f.friend_status_id = ?
+                """;
 
         return jdbcTemplate.query(
                 sql,
@@ -188,7 +188,6 @@ public class UserDbStorage implements UserStorage {
             log.debug("Найдено {} общих друзей для пользователей id={} и id={}",
                     commonFriends.size(), userId, otherId);
         }
-
         return commonFriends;
     }
 
@@ -196,7 +195,6 @@ public class UserDbStorage implements UserStorage {
     public List<User> getAllUsers() {
         return jdbcTemplate.query("select * from users", userRowMapper());
     }
-
 
     @Override
     public void validateEmailFormat(User user) {

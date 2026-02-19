@@ -83,13 +83,10 @@ public class FilmDbStorage implements FilmStorage {
                        f.description,
                        f.release_date,
                        f.duration,
-                
                        r.rating_id,
                        r.rating_title,
-                
                        g.genre_id,
                        g.genre_title
-                
                 FROM films f
                 LEFT JOIN rating r ON f.rating_id = r.rating_id
                 LEFT JOIN film_genre fg ON f.film_id = fg.film_id
@@ -145,15 +142,7 @@ public class FilmDbStorage implements FilmStorage {
         }
         findFilmById(film.getId());
         validateRatingExists(film.getMpa().getId());
-        String sql = """
-                UPDATE films
-                SET film_name = ?, 
-                    description = ?, 
-                    release_date = ?, 
-                    duration = ?, 
-                    rating_id = ?
-                WHERE film_id = ?
-                """;
+        String sql = "UPDATE films SET film_name = ?, description = ?, release_date = ?, duration = ?, rating_id = ? WHERE film_id = ? ";
         int rows = jdbcTemplate.update(sql,
                 film.getName(),
                 film.getDescription(),
@@ -177,13 +166,10 @@ public class FilmDbStorage implements FilmStorage {
                        f.description,
                        f.release_date,
                        f.duration,
-                
                        r.rating_id,
                        r.rating_title,
-                
                        g.genre_id,
                        g.genre_title
-                
                 FROM films f
                 LEFT JOIN rating r ON f.rating_id = r.rating_id
                 LEFT JOIN film_genre fg ON f.film_id = fg.film_id
@@ -214,15 +200,15 @@ public class FilmDbStorage implements FilmStorage {
                         film.setMpa(rating);
                     }
 
-                        film.setGenres(new LinkedHashSet<>());
-                    }
+                    film.setGenres(new LinkedHashSet<>());
+                }
 
-                    int genreId = rs.getInt("genre_id");
-                    if (!rs.wasNull()) {
-                        Genre genre = new Genre(
-                                genreId,
-                                rs.getString("genre_title")
-                        );
+                int genreId = rs.getInt("genre_id");
+                if (!rs.wasNull()) {
+                    Genre genre = new Genre(
+                            genreId,
+                            rs.getString("genre_title")
+                    );
                     film.getGenres().add(genre);
                 }
             }
@@ -241,11 +227,7 @@ public class FilmDbStorage implements FilmStorage {
         Film film = findFilmById(filmId);
         userStorage.findUserById(userId);
 
-        String checkSql = """
-                SELECT COUNT(*) 
-                FROM film_like 
-                WHERE film_id = ? AND user_id = ?
-                """;
+        String checkSql = "SELECT COUNT(*) FROM film_like WHERE film_id = ? AND user_id = ?";
         Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, filmId, userId);
         if (count != null && count > 0) {
             log.debug("Лайк уже существует: filmId={}, userId={}", filmId, userId);

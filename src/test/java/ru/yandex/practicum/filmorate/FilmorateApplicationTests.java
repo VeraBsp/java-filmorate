@@ -108,7 +108,7 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    public void testDeleteUser(){
+    public void testDeleteUser() {
         User createdUser = userStorage.createUser(user1);
         userStorage.deleteUser(createdUser.getId());
         assertThatThrownBy(() -> userStorage.findUserById(createdUser.getId()))
@@ -199,7 +199,7 @@ class FilmorateApplicationTests {
 
     @Test
     void testGetFriends_emptyList() {
-       userStorage.createUser(user1);
+        userStorage.createUser(user1);
         List<User> friends = userStorage.getFriendsThisUser(user1.getId());
         assertThat(friends).isEmpty();
     }
@@ -294,7 +294,6 @@ class FilmorateApplicationTests {
                 .hasFieldOrPropertyWithValue("duration", 120)
                 .hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(2020, 1, 1));
 
-        // Проверяем, что фильм реально в БД
         Film filmFromDb = filmStorage.findFilmById(createdFilm.getId());
 
         assertThat(filmFromDb)
@@ -351,7 +350,6 @@ class FilmorateApplicationTests {
 
     @Test
     void testUpdateFilm_success() {
-        // создаём фильм
         Film film = new Film();
         film.setName("Old Name");
         film.setDescription("Old description");
@@ -368,7 +366,6 @@ class FilmorateApplicationTests {
 
         Film created = filmStorage.createFilm(film);
 
-        // меняем поля
         created.setName("New Name");
         created.setDescription("New description");
         created.setDuration(150);
@@ -384,20 +381,16 @@ class FilmorateApplicationTests {
 
         Film updated = filmStorage.updateFilm(created);
 
-        // id не изменился
         assertThat(updated.getId()).isEqualTo(created.getId());
 
-        // изменённые поля обновились
         assertThat(updated)
                 .hasFieldOrPropertyWithValue("name", "New Name")
                 .hasFieldOrPropertyWithValue("description", "New description")
                 .hasFieldOrPropertyWithValue("duration", 150)
                 .hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(2010, 5, 5));
 
-        // рейтинг обновился
         assertThat(updated.getMpa().getId()).isEqualTo(2);
 
-        // жанры обновились
         assertThat(updated.getGenres())
                 .hasSize(1)
                 .extracting(Genre::getId)
