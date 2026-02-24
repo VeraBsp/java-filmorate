@@ -25,7 +25,7 @@ public class GenreDbStorage implements GenreStorage {
     }
 
     @Override
-    public List<Genre> getAllGenre() {
+    public List<Genre> getAll() {
         List<Genre> genres = jdbcTemplate.query("select * from genres", new RowMapper<Genre>() {
             @Override
             public Genre mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -37,7 +37,7 @@ public class GenreDbStorage implements GenreStorage {
     }
 
     @Override
-    public Genre findGenreById(int genreId) {
+    public Genre findById(int genreId) {
         String sql = "SELECT genre_id, genre_title FROM genres WHERE genre_id = ?";
         List<Genre> genres = jdbcTemplate.query(
                 sql,

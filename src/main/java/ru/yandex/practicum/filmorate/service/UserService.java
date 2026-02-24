@@ -18,24 +18,24 @@ public class UserService {
         this.userStorage = userStorage;
     }
 
-    public List<User> getAllUsers() {
-        return userStorage.getAllUsers();
+    public List<User> getAll() {
+        return userStorage.getAll();
     }
 
-    public User findUserById(int id) {
-        return userStorage.findUserById(id);
+    public User findById(int id) {
+        return userStorage.findById(id);
     }
 
-    public User createUser(User user) {
-        return userStorage.createUser(user);
+    public User create(User user) {
+        return userStorage.create(user);
     }
 
-    public User updateUser(User user) {
-        return userStorage.updateUser(user);
+    public User update(User user) {
+        return userStorage.update(user);
     }
 
-    public void deleteUser(int userId) {
-        userStorage.deleteUser(userId);
+    public void delete(int userId) {
+        userStorage.delete(userId);
     }
 
     public void addFriend(int userId, int friendId) {

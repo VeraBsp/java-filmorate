@@ -67,8 +67,8 @@ class FilmorateApplicationTests {
 
     @Test
     public void testFindUserById() {
-        userStorage.createUser(user1);
-        User foundUser = userStorage.findUserById(user1.getId());
+        userStorage.create(user1);
+        User foundUser = userStorage.findById(user1.getId());
 
         assertThat(foundUser)
                 .isNotNull()
@@ -77,7 +77,7 @@ class FilmorateApplicationTests {
 
     @Test
     public void testCreateUser() {
-        User createdUser = userStorage.createUser(user1);
+        User createdUser = userStorage.create(user1);
         assertThat(createdUser)
                 .isNotNull()
                 .hasFieldOrProperty("id")
@@ -85,7 +85,7 @@ class FilmorateApplicationTests {
                 .hasFieldOrPropertyWithValue("email", "user1@mail.ru")
                 .hasFieldOrPropertyWithValue("name", "user1 Name");
 
-        User userFromDb = userStorage.findUserById(createdUser.getId());
+        User userFromDb = userStorage.findById(createdUser.getId());
         assertThat(userFromDb)
                 .isNotNull()
                 .hasFieldOrPropertyWithValue("id", createdUser.getId())
@@ -95,43 +95,43 @@ class FilmorateApplicationTests {
     @Test
     public void testCreateUserWithoutName() {
         user1.setName("");
-        User createdUser = userStorage.createUser(user1);
+        User createdUser = userStorage.create(user1);
         assertThat(createdUser.getName()).isEqualTo("user1Login");
     }
 
     @Test
     public void testCreateUserWithDuplicateEmail() {
-        userStorage.createUser(user1);
+        userStorage.create(user1);
         user2.setEmail("user1@mail.ru");
-        assertThatThrownBy(() -> userStorage.createUser(user2))
+        assertThatThrownBy(() -> userStorage.create(user2))
                 .isInstanceOf(IncorrectParameterException.class);
     }
 
     @Test
     public void testDeleteUser() {
-        User createdUser = userStorage.createUser(user1);
-        userStorage.deleteUser(createdUser.getId());
-        assertThatThrownBy(() -> userStorage.findUserById(createdUser.getId()))
+        User createdUser = userStorage.create(user1);
+        userStorage.delete(createdUser.getId());
+        assertThatThrownBy(() -> userStorage.findById(createdUser.getId()))
                 .isInstanceOf(ObjectNotFoundException.class);
     }
 
     @Test
     public void testUpdateUser() {
-        User createdUser = userStorage.createUser(user1);
+        User createdUser = userStorage.create(user1);
 
         int originalId = createdUser.getId();
         String originalLogin = createdUser.getLogin();
         LocalDate originalBirthday = createdUser.getBirthday();
         createdUser.setName("Updated Name");
 
-        User updatedUser = userStorage.updateUser(createdUser);
+        User updatedUser = userStorage.update(createdUser);
         assertThat(updatedUser.getId()).isEqualTo(originalId);
         assertThat(updatedUser.getName()).isEqualTo("Updated Name");
         assertThat(updatedUser.getLogin()).isEqualTo(originalLogin);
         assertThat(updatedUser.getEmail()).isEqualTo("user1@mail.ru");
         assertThat(updatedUser.getBirthday()).isEqualTo(originalBirthday);
 
-        User userFromDb = userStorage.findUserById(originalId);
+        User userFromDb = userStorage.findById(originalId);
 
         assertThat(userFromDb.getId()).isEqualTo(originalId);
         assertThat(userFromDb.getName()).isEqualTo("Updated Name");
@@ -142,8 +142,8 @@ class FilmorateApplicationTests {
 
     @Test
     public void testAddFriend_success() {
-        User createdUser1 = userStorage.createUser(user1);
-        User createdUser2 = userStorage.createUser(user2);
+        User createdUser1 = userStorage.create(user1);
+        User createdUser2 = userStorage.create(user2);
         userStorage.addFriends(createdUser1.getId(), createdUser2.getId());
         List<User> friends = userStorage.getFriendsThisUser(createdUser1.getId());
         assertThat(friends)
@@ -154,7 +154,7 @@ class FilmorateApplicationTests {
 
     @Test
     public void testAddFriend_selfFriend() {
-        User createdUser = userStorage.createUser(user1);
+        User createdUser = userStorage.create(user1);
 
         assertThatThrownBy(() ->
                 userStorage.addFriends(createdUser.getId(), createdUser.getId())
@@ -163,8 +163,8 @@ class FilmorateApplicationTests {
 
     @Test
     public void testAddFriend_duplicate() {
-        User createdUser1 = userStorage.createUser(user1);
-        User createdUser2 = userStorage.createUser(user2);
+        User createdUser1 = userStorage.create(user1);
+        User createdUser2 = userStorage.create(user2);
 
         userStorage.addFriends(createdUser1.getId(), createdUser2.getId());
 
@@ -175,7 +175,7 @@ class FilmorateApplicationTests {
 
     @Test
     public void testAddFriend_userNotFound() {
-        User createdUser = userStorage.createUser(user1);
+        User createdUser = userStorage.create(user1);
 
         assertThatThrownBy(() ->
                 userStorage.addFriends(createdUser.getId(), 9999)
@@ -184,8 +184,8 @@ class FilmorateApplicationTests {
 
     @Test
     void testGetFriends_success() {
-        userStorage.createUser(user1);
-        userStorage.createUser(user2);
+        userStorage.create(user1);
+        userStorage.create(user2);
         userStorage.addFriends(user1.getId(), user2.getId());
 
         List<User> friends = userStorage.getFriendsThisUser(user1.getId());
@@ -199,16 +199,16 @@ class FilmorateApplicationTests {
 
     @Test
     void testGetFriends_emptyList() {
-        userStorage.createUser(user1);
+        userStorage.create(user1);
         List<User> friends = userStorage.getFriendsThisUser(user1.getId());
         assertThat(friends).isEmpty();
     }
 
     @Test
     void testGetCommonFriends_empty() {
-        userStorage.createUser(user1);
-        userStorage.createUser(user2);
-        userStorage.createUser(friend1);
+        userStorage.create(user1);
+        userStorage.create(user2);
+        userStorage.create(friend1);
         // только user1 добавляет друга
         userStorage.addFriends(user1.getId(), friend1.getId());
         List<User> commonFriends = userStorage.getCommonFriends(user1.getId(), user2.getId());
@@ -217,9 +217,9 @@ class FilmorateApplicationTests {
 
     @Test
     void testGetCommonFriendsOne_success() {
-        userStorage.createUser(user1);
-        userStorage.createUser(user2);
-        userStorage.createUser(friend1);
+        userStorage.create(user1);
+        userStorage.create(user2);
+        userStorage.create(friend1);
 
         userStorage.addFriends(user1.getId(), friend1.getId());
         userStorage.addFriends(user2.getId(), friend1.getId());
@@ -235,10 +235,10 @@ class FilmorateApplicationTests {
 
     @Test
     void testGetCommonFriends_multiple() {
-        userStorage.createUser(user1);
-        userStorage.createUser(user2);
-        userStorage.createUser(friend1);
-        userStorage.createUser(friend2);
+        userStorage.create(user1);
+        userStorage.create(user2);
+        userStorage.create(friend1);
+        userStorage.create(friend2);
         userStorage.addFriends(user1.getId(), friend1.getId());
         userStorage.addFriends(user1.getId(), friend2.getId());
 
@@ -256,9 +256,9 @@ class FilmorateApplicationTests {
 
     @Test
     void testGetAllUsers_success() {
-        User createdUser1 = userStorage.createUser(user1);
-        User createdUser2 = userStorage.createUser(user2);
-        List<User> users = userStorage.getAllUsers();
+        User createdUser1 = userStorage.create(user1);
+        User createdUser2 = userStorage.create(user2);
+        List<User> users = userStorage.getAll();
         assertThat(users)
                 .isNotEmpty()
                 .hasSizeGreaterThanOrEqualTo(2)
@@ -284,7 +284,7 @@ class FilmorateApplicationTests {
 
         film1.setGenres(Set.of(genre));
 
-        Film createdFilm = filmStorage.createFilm(film1);
+        Film createdFilm = filmStorage.create(film1);
 
         assertThat(createdFilm)
                 .isNotNull()
@@ -294,7 +294,7 @@ class FilmorateApplicationTests {
                 .hasFieldOrPropertyWithValue("duration", 120)
                 .hasFieldOrPropertyWithValue("releaseDate", LocalDate.of(2020, 1, 1));
 
-        Film filmFromDb = filmStorage.findFilmById(createdFilm.getId());
+        Film filmFromDb = filmStorage.findById(createdFilm.getId());
 
         assertThat(filmFromDb)
                 .isNotNull()
@@ -322,8 +322,8 @@ class FilmorateApplicationTests {
 
         film1.setGenres(Set.of(genre1, genre2));
 
-        Film created = filmStorage.createFilm(film1);
-        Film found = filmStorage.findFilmById(created.getId());
+        Film created = filmStorage.create(film1);
+        Film found = filmStorage.findById(created.getId());
         assertThat(found)
                 .isNotNull()
                 .hasFieldOrPropertyWithValue("id", created.getId())
@@ -343,7 +343,7 @@ class FilmorateApplicationTests {
 
     @Test
     void testFindFilmById_notFound() {
-        assertThatThrownBy(() -> filmStorage.findFilmById(9999))
+        assertThatThrownBy(() -> filmStorage.findById(9999))
                 .isInstanceOf(ObjectNotFoundException.class)
                 .hasMessageContaining("не найден");
     }
@@ -364,7 +364,7 @@ class FilmorateApplicationTests {
         genre1.setId(1);
         film.setGenres(Set.of(genre1));
 
-        Film created = filmStorage.createFilm(film);
+        Film created = filmStorage.create(film);
 
         created.setName("New Name");
         created.setDescription("New description");
@@ -379,7 +379,7 @@ class FilmorateApplicationTests {
         genre2.setId(2);
         created.setGenres(Set.of(genre2));
 
-        Film updated = filmStorage.updateFilm(created);
+        Film updated = filmStorage.update(created);
 
         assertThat(updated.getId()).isEqualTo(created.getId());
 
@@ -402,14 +402,14 @@ class FilmorateApplicationTests {
         Film film = new Film();
         film.setId(77); // некорректный id
 
-        assertThatThrownBy(() -> filmStorage.updateFilm(film))
+        assertThatThrownBy(() -> filmStorage.update(film))
                 .isInstanceOf(ObjectNotFoundException.class)
                 .hasMessageContaining("Фильм с id=77 не найден");
     }
 
     @Test
     void testAddLikeFilm_filmNotFound() {
-        User user = userStorage.createUser(user1);
+        User user = userStorage.create(user1);
 
         assertThatThrownBy(() ->
                 filmStorage.addLikeFilm(9999, user.getId())

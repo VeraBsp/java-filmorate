@@ -17,10 +17,10 @@ public class GenreService {
     }
 
     public List<Genre> getAllGenres() {
-        return genreStorage.getAllGenre();
+        return genreStorage.getAll();
     }
 
-    public Genre findGenreById(int genreId) {
-        return genreStorage.findGenreById(genreId);
+    public Genre findById(int genreId) {
+        return genreStorage.findById(genreId);
     }
 }

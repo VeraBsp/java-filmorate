@@ -25,7 +25,7 @@ public class RatingDbStorage implements RatingStorage {
     }
 
     @Override
-    public List<Rating> getAllRatings() {
+    public List<Rating> getAll() {
         List<Rating> ratings = jdbcTemplate.query("select * from rating", new RowMapper<Rating>() {
             @Override
             public Rating mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -37,7 +37,7 @@ public class RatingDbStorage implements RatingStorage {
     }
 
     @Override
-    public Rating findRatingById(int ratingId) {
+    public Rating findById(int ratingId) {
         String sql = "select rating_id, rating_title from rating where rating_id = ?";
         List<Rating> ratings = jdbcTemplate.query(
                 sql,

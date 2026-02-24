@@ -29,7 +29,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User createUser(User user) {
+    public User create(User user) {
         validateEmailFormat(user);
         validateEmailUniqueness(user);
         if (user.getName() == null || user.getName().isBlank()) {
@@ -54,7 +54,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public void deleteUser(int userId) {
+    public void delete(int userId) {
         String sql = "DELETE FROM users WHERE user_id = ?";
         int rowsAffected = jdbcTemplate.update(sql, userId);
         if (rowsAffected == 0) {
@@ -65,7 +65,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User updateUser(User user) {
+    public User update(User user) {
         validateEmailFormat(user);
         if (user.getId() <= 0) {
             throw new IncorrectParameterException("Id пользователя указан некорректно");
@@ -88,11 +88,11 @@ public class UserDbStorage implements UserStorage {
         if (rows == 0) {
             throw new ObjectNotFoundException("Пользователь с id=" + user.getId() + " не найден");
         }
-        return findUserById(user.getId());
+        return findById(user.getId());
     }
 
     @Override
-    public User findUserById(int userId) {
+    public User findById(int userId) {
         List<User> users = jdbcTemplate.query("select * from users where user_id = ?", userRowMapper(), userId);
         if (users.isEmpty()) {
             log.warn("Пользователь с id=" + userId + " не найден");
@@ -103,8 +103,8 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void addFriends(Integer userId, Integer friendId) {
-        findUserById(userId);
-        findUserById(friendId);
+        findById(userId);
+        findById(friendId);
         if (userId.equals(friendId)) {
             log.warn("Нельзя добавить себя в друзья.");
             throw new IncorrectParameterException("Нельзя добавить себя в друзья.");
@@ -112,7 +112,7 @@ public class UserDbStorage implements UserStorage {
         String checkSql = "SELECT COUNT(*) FROM friends WHERE user_id = ? AND friend_id = ?";
         Integer count = jdbcTemplate.queryForObject(checkSql, Integer.class, userId, friendId);
 
-        if (count != null && count > 0) {
+        if (count > 0) {
             log.info("Пользователь с id={} уже является другом пользователя id={}", friendId, userId);
             throw new IncorrectParameterException("Пользователи уже друзья.");
             //    return;
@@ -124,8 +124,8 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void deleteFriends(Integer userId, Integer friendId) {
-        findUserById(userId);
-        findUserById(friendId);
+        findById(userId);
+        findById(friendId);
         String sql = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
         jdbcTemplate.update(sql, userId, friendId);
         log.info("Пользователь с id={} удалён из друзей пользователя id={}", friendId, userId);
@@ -134,7 +134,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getFriendsThisUser(Integer userId) {
-        findUserById(userId);
+        findById(userId);
         String sql = """
                 SELECT uf.user_id,
                        uf.name,
@@ -157,8 +157,8 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getCommonFriends(Integer userId, Integer otherId) {
-        findUserById(userId);
-        findUserById(otherId);
+        findById(userId);
+        findById(otherId);
         String sql = """
                 SELECT u.user_id,
                        u.name,
@@ -192,7 +192,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public List<User> getAllUsers() {
+    public List<User> getAll() {
         return jdbcTemplate.query("select * from users", userRowMapper());
     }
 

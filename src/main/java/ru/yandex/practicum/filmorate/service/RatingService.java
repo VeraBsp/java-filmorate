@@ -16,11 +16,11 @@ public class RatingService {
         this.ratingStorage = ratingStorage;
     }
 
-    public List<Rating> getAllRatings() {
-        return ratingStorage.getAllRatings();
+    public List<Rating> getAll() {
+        return ratingStorage.getAll();
     }
 
-    public Rating findRatingById(int ratingId) {
-        return ratingStorage.findRatingById(ratingId);
+    public Rating findById(int ratingId) {
+        return ratingStorage.findById(ratingId);
     }
 }

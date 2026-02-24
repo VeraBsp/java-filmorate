@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +16,7 @@ import java.util.Collection;
 @RequestMapping("/mpa")
 public class RatingController {
     private final RatingService ratingService;
+    private static final Logger log = LoggerFactory.getLogger(RatingController.class);
 
     @Autowired
     public RatingController(RatingService ratingService) {
@@ -21,12 +24,14 @@ public class RatingController {
     }
 
     @GetMapping
-    public Collection<Rating> getAllRatings() {
-        return ratingService.getAllRatings();
+    public Collection<Rating> getAll() {
+        log.info("Сформирован запрос на получение всех рейтингов");
+        return ratingService.getAll();
     }
 
     @GetMapping("{id}")
-    public Rating findRatingById(@PathVariable("id") int ratingId) {
-        return ratingService.findRatingById(ratingId);
+    public Rating findById(@PathVariable("id") int ratingId) {
+        log.info("Получен запрос на получение рейтинга с id={}", ratingId);
+        return ratingService.findById(ratingId);
     }
 }

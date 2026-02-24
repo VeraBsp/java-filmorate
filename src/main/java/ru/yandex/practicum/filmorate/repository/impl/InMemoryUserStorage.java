@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.repository;
+package ru.yandex.practicum.filmorate.repository.impl;
 
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.repository.UserStorage;
 
 import java.util.*;
 
@@ -30,7 +31,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User createUser(@Valid User user) {
+    public User create(@Valid User user) {
         validateEmailFormat(user);
         validateEmailUniqueness(user);
         if (user.getName() == null || user.getName().isBlank()) {
@@ -42,7 +43,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public void deleteUser(int userId) {
+    public void delete(int userId) {
         User removed = userStorage.remove(userId);
         if (removed == null) {
             log.warn("Id пользователя указан некорректно");
@@ -59,7 +60,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User updateUser(@Valid User user) {
+    public User update(@Valid User user) {
         validateEmailFormat(user);
         if (user.getId() <= 0) {
             log.warn("Id пользователя должен быть указан");
@@ -83,7 +84,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User findUserById(int userId) {
+    public User findById(int userId) {
         User user = userStorage.get(userId);
         if (user == null) {
             log.warn("Пользователь с id=" + userId + " не найден");
@@ -138,7 +139,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public List<User> getAllUsers() {
+    public List<User> getAll() {
         return new ArrayList<>(userStorage.values());
     }
 }
