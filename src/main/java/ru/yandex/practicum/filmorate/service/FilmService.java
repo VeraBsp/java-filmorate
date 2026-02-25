@@ -59,4 +59,9 @@ public class FilmService {
         userStorage.findById(friendId);
         return filmStorage.getCommonFilms(userId, friendId);
     }
+
+    public void delete(int filmId) {
+        filmStorage.findById(filmId);
+        filmStorage.delete(filmId);
+    }
 }

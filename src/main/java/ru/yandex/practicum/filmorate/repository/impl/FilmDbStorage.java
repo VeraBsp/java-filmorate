@@ -342,6 +342,17 @@ public class FilmDbStorage implements FilmStorage {
         }, userId, friendId);
     }
 
+    @Override
+    public void delete(int filmId) {
+        String sql = "DELETE FROM films WHERE film_id= ?";
+        int rowsAffected = jdbcTemplate.update(sql, filmId);
+        if (rowsAffected == 0) {
+            log.warn("Фильм с id={} не найден для удаления.", filmId);
+            throw new IncorrectParameterException("Фильм с указанным id не найден.");
+        }
+        log.info("Фильм с id={} успешно удалён.", filmId);
+    }
+
     private void validateGenreExists(int genreId) {
         String sql = "SELECT COUNT(*) FROM genres WHERE genre_id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, genreId);
