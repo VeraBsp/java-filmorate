@@ -469,4 +469,12 @@ class FilmorateApplicationTests {
 
         assertTrue(result.isEmpty());
     }
+
+    @Test
+    public void testDeleteFilm() {
+        Film createdFilm = filmStorage.create(film1);
+        filmStorage.delete(createdFilm.getId());
+        assertThatThrownBy(() -> filmStorage.findById(createdFilm.getId()))
+                .isInstanceOf(ObjectNotFoundException.class);
+    }
 }
