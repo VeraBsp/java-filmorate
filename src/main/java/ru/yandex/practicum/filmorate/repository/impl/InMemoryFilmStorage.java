@@ -1,17 +1,20 @@
-package ru.yandex.practicum.filmorate.repository;
+package ru.yandex.practicum.filmorate.repository.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.repository.FilmStorage;
+import ru.yandex.practicum.filmorate.repository.UserStorage;
 
 import java.time.LocalDate;
 import java.util.*;
 
-@Component
+@Component("inMemoryFilmStorage")
 public class InMemoryFilmStorage implements FilmStorage {
     private static final Logger log = LoggerFactory.getLogger(InMemoryFilmStorage.class);
     private static final LocalDate RELEASE_DATE = LocalDate.of(1895, 12, 28);
@@ -21,12 +24,12 @@ public class InMemoryFilmStorage implements FilmStorage {
     private final UserStorage userStorage;
 
     @Autowired
-    public InMemoryFilmStorage(UserStorage userStorage) {
+    public InMemoryFilmStorage(@Qualifier("userDbStorage") UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
     @Override
-    public Film createFilm(Film film) {
+    public Film create(Film film) {
         checkFieldsFilm(film);
         film.setId(nextId++);
         filmsStorage.put(film.getId(), film);
@@ -34,13 +37,13 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getAllFilm() {
+    public List<Film> getAll() {
         log.info("Текущее количество фильмов: {}", filmsStorage.size());
         return List.copyOf(filmsStorage.values());
     }
 
     @Override
-    public Film updateFilm(Film film) {
+    public Film update(Film film) {
         if (film.getId() <= 0) {
             log.warn("Id фильма должен быть указан");
             throw new IncorrectParameterException("Id фильма должен быть указан");
@@ -60,7 +63,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film findFilmById(int filmId) {
+    public Film findById(int filmId) {
         Film film = filmsStorage.get(filmId);
         if (film == null) {
             log.warn("Фильм с введенным id не найден");
@@ -71,9 +74,9 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film addLikeFilm(int filmId, int userId) {
-        User user = userStorage.findUserById(userId);
-        Film film = findFilmById(filmId);
-        film.getLikes().add(user.getId());
+        User user = userStorage.findById(userId);
+        Film film = findById(filmId);
+        // film.getLikes().add(user.getId());
         return film;
     }
 
@@ -95,17 +98,18 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public void deleteLikeFilm(Integer id, Integer userId) {
-        User user = userStorage.findUserById(userId);
-        Film film = findFilmById(id);
-        film.getLikes().remove(user.getId());
+        User user = userStorage.findById(userId);
+        Film film = findById(id);
+        //   film.getLikes().remove(user.getId());
     }
 
     @Override
     public List<Film> getPopularFilm(int count) {
-        return filmsStorage.values()
-                .stream()
-                .sorted(Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed())
-                .limit(count)
-                .toList();
+        return List.of();
+//        return filmsStorage.values()
+//                .stream()
+//                .sorted(Comparator.comparingInt((Film f) -> f.getLikes().size()).reversed())
+//                .limit(count)
+//                .toList();
     }
 }
