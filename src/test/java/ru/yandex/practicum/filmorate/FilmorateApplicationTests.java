@@ -24,6 +24,8 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @JdbcTest
 @Import({UserDbStorage.class, FilmDbStorage.class, GenreDbStorage.class, RatingDbStorage.class})
@@ -37,8 +39,11 @@ class FilmorateApplicationTests {
     private User friend1;
     private User friend2;
     private Film film1;
+    private Film film2;
     private GenreDbStorage genreDbStorage;
-
+    Genre genre1;
+    Genre genre2;
+    Rating rating;
 
     @BeforeEach
     void setUp() {
@@ -62,7 +67,30 @@ class FilmorateApplicationTests {
         friend2.setEmail("friend2@mail.ru");
         friend2.setName("friend2 Name");
         friend2.setBirthday(LocalDate.of(2012, 10, 1));
+        film1 = new Film();
+        film1.setName("Matrix");
+        film1.setDescription("Sci-fi");
+        film1.setDuration(136);
+        film1.setReleaseDate(LocalDate.of(1999, 3, 31));
 
+        rating = new Rating();
+        rating.setId(1); // должен существовать в data.sql
+        film1.setMpa(rating);
+
+        genre1 = new Genre();
+        genre1.setId(1);
+
+        genre2 = new Genre();
+        genre2.setId(2);
+
+        film1.setGenres(Set.of(genre1, genre2));
+        film2 = new Film();
+        film2.setName("Matrix1");
+        film2.setDescription("Sci-fi1");
+        film2.setDuration(136);
+        film2.setReleaseDate(LocalDate.of(2000, 3, 31));
+        film2.setMpa(rating);
+        film2.setGenres(Set.of(genre1, genre2));
     }
 
     @Test
@@ -304,24 +332,6 @@ class FilmorateApplicationTests {
 
     @Test
     void testFindFilmById_success() {
-        film1 = new Film();
-        film1.setName("Matrix");
-        film1.setDescription("Sci-fi");
-        film1.setDuration(136);
-        film1.setReleaseDate(LocalDate.of(1999, 3, 31));
-
-        Rating rating = new Rating();
-        rating.setId(1); // должен существовать в data.sql
-        film1.setMpa(rating);
-
-        Genre genre1 = new Genre();
-        genre1.setId(1);
-
-        Genre genre2 = new Genre();
-        genre2.setId(2);
-
-        film1.setGenres(Set.of(genre1, genre2));
-
         Film created = filmStorage.create(film1);
         Film found = filmStorage.findById(created.getId());
         assertThat(found)
@@ -414,5 +424,49 @@ class FilmorateApplicationTests {
         assertThatThrownBy(() ->
                 filmStorage.addLikeFilm(9999, user.getId())
         ).isInstanceOf(ObjectNotFoundException.class);
+    }
+
+    @Test
+    void shouldReturnCommonFilmsSortedByPopularity() {
+        user1 = userStorage.create(user1);
+        user2 = userStorage.create(user2);
+        filmStorage.create(film1);
+        filmStorage.create(film2);
+
+        filmStorage.addLikeFilm(film1.getId(), user1.getId());
+        filmStorage.addLikeFilm(film2.getId(), user1.getId());
+
+        filmStorage.addLikeFilm(film1.getId(), user2.getId());
+        filmStorage.addLikeFilm(film2.getId(), user2.getId());
+
+        // добавим дополнительный лайк filmB (чтобы он стал популярнее)
+        User extraUser = new User();
+        extraUser.setLogin("extra");
+        extraUser.setEmail("extra@mail.ru");
+        extraUser.setName("extra");
+        extraUser.setBirthday(LocalDate.of(1995, 5, 5));
+        extraUser = userStorage.create(extraUser);
+
+        filmStorage.addLikeFilm(film2.getId(), extraUser.getId());
+
+        List<Film> result = filmStorage.getCommonFilms(user1.getId(), user2.getId());
+
+        assertEquals(2, result.size());
+        assertEquals("Matrix1", result.get(0).getName()); // более популярный
+        assertEquals("Matrix", result.get(1).getName());
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenNoCommonFilms() {
+        user1 = userStorage.create(user1);
+        user2 = userStorage.create(user2);
+        filmStorage.create(film1);
+        filmStorage.create(film2);
+        filmStorage.addLikeFilm(film1.getId(), user1.getId());
+        filmStorage.addLikeFilm(film2.getId(), user2.getId());
+
+        List<Film> result = filmStorage.getCommonFilms(user1.getId(), user2.getId());
+
+        assertTrue(result.isEmpty());
     }
 }

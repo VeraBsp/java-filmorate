@@ -50,13 +50,13 @@ public class FilmController {
 
     @PutMapping("{id}/like/{userId}")
     public Film addLikeFilm(@PathVariable("id") int id, @PathVariable("userId") int userId) {
-        log.info("Получен запрос на добавление лайка фильму с id={}  от пользователя с userId={}",id, userId);
+        log.info("Получен запрос на добавление лайка фильму с id={}  от пользователя с userId={}", id, userId);
         return filmService.addLikeFilm(id, userId);
     }
 
     @DeleteMapping("{id}/like/{userId}")
     public void deleteLikeFilm(@PathVariable("id") int id, @PathVariable("userId") int userId) {
-        log.info("Получен запрос на удаление лайка фильму с id={}  от пользователя с userId={}",id, userId);
+        log.info("Получен запрос на удаление лайка фильму с id={}  от пользователя с userId={}", id, userId);
         filmService.deleteLikeFilm(id, userId);
     }
 
@@ -65,5 +65,19 @@ public class FilmController {
         log.info("Получен запрос на выборку count={} популярных фильмов", count);
         return filmService.getPopularFilm(count);
     }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilm(@RequestParam("userId") int userId,
+                                    @RequestParam("friendId") int friendId) {
+        log.info("Получен запрос на получение общих фильмов пользователя с userId={} и пользователя с friendId={}",
+                userId, friendId);
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
+//    @DeleteMapping("{filmId}")
+//    public void delete(@RequestParam("filmId") int filmId) {
+//        log.info("Получен запрос на удаление фильма с id={}", filmId);
+//        filmService;
+//    }
 
 }
