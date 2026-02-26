@@ -39,5 +39,6 @@ public class Film {
     @NotNull
     private Rating mpa;
     private Set<Genre> genres = new LinkedHashSet<>();
+    private Set<Director> directors = new LinkedHashSet<>();
 }
 

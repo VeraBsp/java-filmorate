@@ -10,6 +10,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Rating;
@@ -68,11 +69,15 @@ public class FilmDbStorage implements FilmStorage {
                        r.rating_id,
                        r.rating_title,
                        g.genre_id,
-                       g.genre_title
+                       g.genre_title,
+                       d.director_id,
+                       d.director_name
                 FROM films f
                 LEFT JOIN rating r ON f.rating_id = r.rating_id
                 LEFT JOIN film_genre fg ON f.film_id = fg.film_id
                 LEFT JOIN genres g ON fg.genre_id = g.genre_id
+                LEFT JOIN film_director fd ON f.film_id = fd.film_id
+                LEFT JOIN directors d ON fd.director_id = d.director_id
                 ORDER BY f.film_id
                 """;
 
@@ -97,19 +102,26 @@ public class FilmDbStorage implements FilmStorage {
                             rs.getString("rating_title")
                     );
                     film.setMpa(rating);
-
                     film.setGenres(new HashSet<>());
-
+                    film.setDirectors(new HashSet<>());
                     filmMap.put(filmId, film);
                 }
                 int genreId = rs.getInt("genre_id");
-
                 if (!rs.wasNull()) {
                     Genre genre = new Genre(
                             genreId,
                             rs.getString("genre_title")
                     );
                     film.getGenres().add(genre);
+                }
+
+                int directorId = rs.getInt("director_id");
+                if (!rs.wasNull()) {
+                    Director director = new Director(
+                            directorId,
+                            rs.getString("director_name")
+                    );
+                    film.getDirectors().add(director);
                 }
             }
             return new ArrayList<>(filmMap.values());
@@ -151,11 +163,15 @@ public class FilmDbStorage implements FilmStorage {
                        r.rating_id,
                        r.rating_title,
                        g.genre_id,
-                       g.genre_title
+                       g.genre_title,
+                       d.director_id,
+                       d.director_name
                 FROM films f
                 LEFT JOIN rating r ON f.rating_id = r.rating_id
                 LEFT JOIN film_genre fg ON f.film_id = fg.film_id
                 LEFT JOIN genres g ON fg.genre_id = g.genre_id
+                LEFT JOIN film_director fd ON f.film_id = fd.film_id
+                LEFT JOIN directors d ON fd.director_id = d.director_id
                 WHERE f.film_id = ?
                 ORDER BY g.genre_id
                 """;
@@ -183,8 +199,8 @@ public class FilmDbStorage implements FilmStorage {
                     }
 
                     film.setGenres(new LinkedHashSet<>());
+                    film.setDirectors(new HashSet<>());
                 }
-
                 int genreId = rs.getInt("genre_id");
                 if (!rs.wasNull()) {
                     Genre genre = new Genre(
@@ -192,6 +208,15 @@ public class FilmDbStorage implements FilmStorage {
                             rs.getString("genre_title")
                     );
                     film.getGenres().add(genre);
+                }
+
+                int directorId = rs.getInt("director_id");
+                if (!rs.wasNull()) {
+                    Director director = new Director(
+                            directorId,
+                            rs.getString("director_name")
+                    );
+                    film.getDirectors().add(director);
                 }
             }
 
@@ -281,6 +306,8 @@ public class FilmDbStorage implements FilmStorage {
                r.rating_title,
                g.genre_id,
                g.genre_title,
+               d.director_id,
+               d.director_name,
                COUNT(fl_all.user_id) AS popularity
         FROM films f
         JOIN film_like fl1 ON f.film_id = fl1.film_id
@@ -289,6 +316,8 @@ public class FilmDbStorage implements FilmStorage {
         LEFT JOIN rating r ON f.rating_id = r.rating_id
         LEFT JOIN film_genre fg ON f.film_id = fg.film_id
         LEFT JOIN genres g ON fg.genre_id = g.genre_id
+        LEFT JOIN film_director fd ON f.film_id = fd.film_id
+        LEFT JOIN directors d ON fd.director_id = d.director_id
         WHERE fl1.user_id = ?
           AND fl2.user_id = ?
         GROUP BY f.film_id, g.genre_id
@@ -323,10 +352,9 @@ public class FilmDbStorage implements FilmStorage {
                     }
 
                     film.setGenres(new LinkedHashSet<>());
-
+                    film.setDirectors(new LinkedHashSet<>());
                     films.put(filmId, film);
                 }
-
                 int genreId = rs.getInt("genre_id");
                 if (!rs.wasNull()) {
                     Genre genre = new Genre(
@@ -334,6 +362,15 @@ public class FilmDbStorage implements FilmStorage {
                             rs.getString("genre_title")
                     );
                     film.getGenres().add(genre);
+                }
+
+                int directorId = rs.getInt("director_id");
+                if (!rs.wasNull()) {
+                    Director director = new Director(
+                            directorId,
+                            rs.getString("director_name")
+                    );
+                    film.getDirectors().add(director);
                 }
             }
 
