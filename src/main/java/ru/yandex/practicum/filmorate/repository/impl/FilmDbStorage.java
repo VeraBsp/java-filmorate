@@ -621,7 +621,6 @@ public class FilmDbStorage implements FilmStorage {
         String insertSql = "INSERT INTO film_director (film_id, director_id) VALUES (?, ?)";
         jdbcTemplate.batchUpdate(insertSql, directors, directors.size(),
                 (ps, director) -> {
-                    validateGenreExists(director.getId());
                     ps.setInt(1, filmId);
                     ps.setInt(2, director.getId());
                 });
