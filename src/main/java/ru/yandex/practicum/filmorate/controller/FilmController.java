@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.ValidationException;
 import jakarta.validation.constraints.Positive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,4 +81,18 @@ public class FilmController {
         filmService.delete(filmId);
     }
 
+    @GetMapping("/director/{directorId}")
+    public List<Film> findAllFilmsByDirectorId(
+            @PathVariable int directorId,
+            @RequestParam(defaultValue = "year") String sortBy) {
+        log.info("Получен запрос на получение фильмов режиссера с id={}, сортировка={}",
+                directorId, sortBy);
+        if (sortBy.equalsIgnoreCase("likes")) {
+            return filmService.findAllFilmsByDirectorIdSortByLikes(directorId);
+        }
+        if (sortBy.equalsIgnoreCase("year")) {
+            return filmService.findAllFilmsByDirectorIdSortByYear(directorId);
+        }
+        throw new ValidationException("sortBy должен быть 'year' или 'likes'");
+    }
 }

@@ -24,4 +24,9 @@ public interface FilmStorage {
     List<Film> getCommonFilms(Integer userId, Integer friendId);
 
     void delete(int filmId);
+
+    List<Film> findAllFilmsByDirectorIdSortByLikes(int directorId);
+
+    List<Film> findAllFilmsByDirectorIdSortByYear(int directorId);
 }
+
