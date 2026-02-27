@@ -297,32 +297,32 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
         String sql = """
-        SELECT f.film_id,
-               f.film_name,
-               f.description,
-               f.release_date,
-               f.duration,
-               r.rating_id,
-               r.rating_title,
-               g.genre_id,
-               g.genre_title,
-               d.director_id,
-               d.director_name,
-               COUNT(fl_all.user_id) AS popularity
-        FROM films f
-        JOIN film_like fl1 ON f.film_id = fl1.film_id
-        JOIN film_like fl2 ON f.film_id = fl2.film_id
-        LEFT JOIN film_like fl_all ON f.film_id = fl_all.film_id
-        LEFT JOIN rating r ON f.rating_id = r.rating_id
-        LEFT JOIN film_genre fg ON f.film_id = fg.film_id
-        LEFT JOIN genres g ON fg.genre_id = g.genre_id
-        LEFT JOIN film_director fd ON f.film_id = fd.film_id
-        LEFT JOIN directors d ON fd.director_id = d.director_id
-        WHERE fl1.user_id = ?
-          AND fl2.user_id = ?
-        GROUP BY f.film_id, g.genre_id
-        ORDER BY popularity DESC, g.genre_id
-        """;
+                SELECT f.film_id,
+                       f.film_name,
+                       f.description,
+                       f.release_date,
+                       f.duration,
+                       r.rating_id,
+                       r.rating_title,
+                       g.genre_id,
+                       g.genre_title,
+                       d.director_id,
+                       d.director_name,
+                       COUNT(fl_all.user_id) AS popularity
+                FROM films f
+                JOIN film_like fl1 ON f.film_id = fl1.film_id
+                JOIN film_like fl2 ON f.film_id = fl2.film_id
+                LEFT JOIN film_like fl_all ON f.film_id = fl_all.film_id
+                LEFT JOIN rating r ON f.rating_id = r.rating_id
+                LEFT JOIN film_genre fg ON f.film_id = fg.film_id
+                LEFT JOIN genres g ON fg.genre_id = g.genre_id
+                LEFT JOIN film_director fd ON f.film_id = fd.film_id
+                LEFT JOIN directors d ON fd.director_id = d.director_id
+                WHERE fl1.user_id = ?
+                  AND fl2.user_id = ?
+                GROUP BY f.film_id, g.genre_id
+                ORDER BY popularity DESC, g.genre_id
+                """;
 
         return jdbcTemplate.query(sql, rs -> {
 
@@ -388,6 +388,172 @@ public class FilmDbStorage implements FilmStorage {
             throw new IncorrectParameterException("Фильм с указанным id не найден.");
         }
         log.info("Фильм с id={} успешно удалён.", filmId);
+    }
+
+    @Override
+    public List<Film> findAllFilmsByDirectorIdSortByLikes(int directorId, String sortBy) {
+        String sql = """
+                SELECT f.film_id,
+                       f.film_name,
+                       f.description,
+                       f.release_date,
+                       f.duration,
+                       r.rating_id,
+                       r.rating_title,
+                       g.genre_id,
+                       g.genre_title,
+                       d.director_id,
+                       d.director_name,
+                       COUNT(fl_all.user_id) AS popularity
+                FROM films f
+                JOIN film_like fl1 ON f.film_id = fl1.film_id
+                JOIN film_like fl2 ON f.film_id = fl2.film_id
+                LEFT JOIN film_like fl_all ON f.film_id = fl_all.film_id
+                LEFT JOIN rating r ON f.rating_id = r.rating_id
+                LEFT JOIN film_genre fg ON f.film_id = fg.film_id
+                LEFT JOIN genres g ON fg.genre_id = g.genre_id
+                LEFT JOIN film_director fd ON f.film_id = fd.film_id
+                LEFT JOIN directors d ON fd.director_id = d.director_id
+                WHERE fd.director_id = ?
+                GROUP BY f.film_id, g.genre_id
+                ORDER BY popularity DESC
+                """;
+        return jdbcTemplate.query(sql, rs -> {
+
+            Map<Integer, Film> films = new LinkedHashMap<>();
+
+            while (rs.next()) {
+
+                int filmId = rs.getInt("film_id");
+
+                Film film = films.get(filmId);
+
+                if (film == null) {
+                    film = new Film();
+                    film.setId(filmId);
+                    film.setName(rs.getString("film_name"));
+                    film.setDescription(rs.getString("description"));
+                    film.setReleaseDate(rs.getDate("release_date").toLocalDate());
+                    film.setDuration(rs.getInt("duration"));
+
+                    int ratingId = rs.getInt("rating_id");
+                    if (!rs.wasNull()) {
+                        Rating rating = new Rating(
+                                ratingId,
+                                rs.getString("rating_title")
+                        );
+                        film.setMpa(rating);
+                    }
+
+                    film.setGenres(new LinkedHashSet<>());
+                    film.setDirectors(new LinkedHashSet<>());
+                    films.put(filmId, film);
+                }
+                int genreId = rs.getInt("genre_id");
+                if (!rs.wasNull()) {
+                    Genre genre = new Genre(
+                            genreId,
+                            rs.getString("genre_title")
+                    );
+                    film.getGenres().add(genre);
+                }
+
+                int dirId = rs.getInt("director_id");
+                if (!rs.wasNull()) {
+                    Director director = new Director(
+                            dirId,
+                            rs.getString("director_name")
+                    );
+                    film.getDirectors().add(director);
+                }
+            }
+
+            return new ArrayList<>(films.values());
+
+        }, directorId);
+    }
+
+    @Override
+    public List<Film> findAllFilmsByDirectorIdSortByYear(int directorId, String sortBy) {
+        String sql = """
+                SELECT f.film_id,
+                       f.film_name,
+                       f.description,
+                       f.release_date,
+                       f.duration,
+                       r.rating_id,
+                       r.rating_title,
+                       g.genre_id,
+                       g.genre_title,
+                       d.director_id,
+                       d.director_name,
+                       COUNT(fl_all.user_id) AS popularity
+                FROM films f
+                JOIN film_like fl1 ON f.film_id = fl1.film_id
+                JOIN film_like fl2 ON f.film_id = fl2.film_id
+                LEFT JOIN film_like fl_all ON f.film_id = fl_all.film_id
+                LEFT JOIN rating r ON f.rating_id = r.rating_id
+                LEFT JOIN film_genre fg ON f.film_id = fg.film_id
+                LEFT JOIN genres g ON fg.genre_id = g.genre_id
+                LEFT JOIN film_director fd ON f.film_id = fd.film_id
+                LEFT JOIN directors d ON fd.director_id = d.director_id
+                WHERE fd.director_id = ?
+                GROUP BY f.film_id, g.genre_id
+                ORDER BY release_date DESC
+                """;
+        return jdbcTemplate.query(sql, rs -> {
+
+            Map<Integer, Film> films = new LinkedHashMap<>();
+
+            while (rs.next()) {
+
+                int filmId = rs.getInt("film_id");
+
+                Film film = films.get(filmId);
+
+                if (film == null) {
+                    film = new Film();
+                    film.setId(filmId);
+                    film.setName(rs.getString("film_name"));
+                    film.setDescription(rs.getString("description"));
+                    film.setReleaseDate(rs.getDate("release_date").toLocalDate());
+                    film.setDuration(rs.getInt("duration"));
+
+                    int ratingId = rs.getInt("rating_id");
+                    if (!rs.wasNull()) {
+                        Rating rating = new Rating(
+                                ratingId,
+                                rs.getString("rating_title")
+                        );
+                        film.setMpa(rating);
+                    }
+
+                    film.setGenres(new LinkedHashSet<>());
+                    film.setDirectors(new LinkedHashSet<>());
+                    films.put(filmId, film);
+                }
+                int genreId = rs.getInt("genre_id");
+                if (!rs.wasNull()) {
+                    Genre genre = new Genre(
+                            genreId,
+                            rs.getString("genre_title")
+                    );
+                    film.getGenres().add(genre);
+                }
+
+                int dirId = rs.getInt("director_id");
+                if (!rs.wasNull()) {
+                    Director director = new Director(
+                            dirId,
+                            rs.getString("director_name")
+                    );
+                    film.getDirectors().add(director);
+                }
+            }
+
+            return new ArrayList<>(films.values());
+
+        }, directorId);
     }
 
     private void validateGenreExists(int genreId) {

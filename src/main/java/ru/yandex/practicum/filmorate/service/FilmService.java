@@ -64,4 +64,12 @@ public class FilmService {
         filmStorage.findById(filmId);
         filmStorage.delete(filmId);
     }
+
+    public List<Film> findAllFilmsByDirectorIdSortByLikes(int directorId, String sortBy) {
+        return filmStorage.findAllFilmsByDirectorIdSortByLikes(directorId, sortBy);
+    }
+
+    public List<Film> findAllFilmsByDirectorIdSortByYear(int directorId, String sortBy) {
+        return filmStorage.findAllFilmsByDirectorIdSortByYear(directorId, sortBy);
+    }
 }
