@@ -65,11 +65,11 @@ public class FilmService {
         filmStorage.delete(filmId);
     }
 
-    public List<Film> findAllFilmsByDirectorIdSortByLikes(int directorId, String sortBy) {
-        return filmStorage.findAllFilmsByDirectorIdSortByLikes(directorId, sortBy);
+    public List<Film> findAllFilmsByDirectorIdSortByLikes(int directorId) {
+        return filmStorage.findAllFilmsByDirectorIdSortByLikes(directorId);
     }
 
-    public List<Film> findAllFilmsByDirectorIdSortByYear(int directorId, String sortBy) {
-        return filmStorage.findAllFilmsByDirectorIdSortByYear(directorId, sortBy);
+    public List<Film> findAllFilmsByDirectorIdSortByYear(int directorId) {
+        return filmStorage.findAllFilmsByDirectorIdSortByYear(directorId);
     }
 }

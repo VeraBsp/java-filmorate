@@ -391,7 +391,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> findAllFilmsByDirectorIdSortByLikes(int directorId, String sortBy) {
+    public List<Film> findAllFilmsByDirectorIdSortByLikes(int directorId) {
         String sql = """
                 SELECT f.film_id,
                        f.film_name,
@@ -475,7 +475,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> findAllFilmsByDirectorIdSortByYear(int directorId, String sortBy) {
+    public List<Film> findAllFilmsByDirectorIdSortByYear(int directorId) {
         String sql = """
                 SELECT f.film_id,
                        f.film_name,
@@ -495,7 +495,7 @@ public class FilmDbStorage implements FilmStorage {
                 LEFT JOIN genres g ON fg.genre_id = g.genre_id
                 LEFT JOIN directors d ON fd.director_id = d.director_id
                 WHERE fd.director_id = ?
-                ORDER BY f.release_date
+                ORDER BY f.release_date DESC, f.film_id
                 """;
         return jdbcTemplate.query(sql, rs -> {
 

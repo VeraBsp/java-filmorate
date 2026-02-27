@@ -85,23 +85,14 @@ public class FilmController {
     public List<Film> findAllFilmsByDirectorId(
             @PathVariable int directorId,
             @RequestParam(defaultValue = "year") String sortBy) {
-
-        if (!sortBy.equalsIgnoreCase("year") &&
-                !sortBy.equalsIgnoreCase("likes")) {
-            log.warn("Нужно выбрать вид сортировки year или likes");
-            throw new ValidationException("sortBy должен быть 'year' или 'likes'");
-        }
+        log.info("Получен запрос на получение фильмов режиссера с id={}, сортировка={}",
+                directorId, sortBy);
         if (sortBy.equalsIgnoreCase("likes")) {
-            log.info("Получен запрос на получение фильмов режиссера с Id={}  сортировкой по лайкам",
-                    directorId);
-            return filmService.findAllFilmsByDirectorIdSortByLikes(directorId, sortBy);
-        } else if (sortBy.equalsIgnoreCase("year")) {
-            log.info("Получен запрос на получение фильмов режиссера с Id={}  сортировкой по году выпуска фильма",
-                    directorId);
-            return filmService.findAllFilmsByDirectorIdSortByYear(directorId, sortBy);
+            return filmService.findAllFilmsByDirectorIdSortByLikes(directorId);
         }
-        log.info("Получен запрос на получение фильмов режиссера с Id={}  сортировкой по году выпуска фильма",
-                directorId);
-        return filmService.findAllFilmsByDirectorIdSortByLikes(directorId, sortBy);
+        if (sortBy.equalsIgnoreCase("year")) {
+            return filmService.findAllFilmsByDirectorIdSortByYear(directorId);
+        }
+        throw new ValidationException("sortBy должен быть 'year' или 'likes'");
     }
 }
