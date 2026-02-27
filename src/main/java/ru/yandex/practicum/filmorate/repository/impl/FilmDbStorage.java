@@ -404,18 +404,19 @@ public class FilmDbStorage implements FilmStorage {
                        g.genre_title,
                        d.director_id,
                        d.director_name,
-                       COUNT(fl_all.user_id) AS popularity
+                       COUNT(fl.user_id) AS popularity
                 FROM films f
-                JOIN film_like fl1 ON f.film_id = fl1.film_id
-                JOIN film_like fl2 ON f.film_id = fl2.film_id
-                LEFT JOIN film_like fl_all ON f.film_id = fl_all.film_id
+                JOIN film_director fd ON f.film_id = fd.film_id
+                LEFT JOIN film_like fl ON f.film_id = fl.film_id
                 LEFT JOIN rating r ON f.rating_id = r.rating_id
                 LEFT JOIN film_genre fg ON f.film_id = fg.film_id
                 LEFT JOIN genres g ON fg.genre_id = g.genre_id
-                LEFT JOIN film_director fd ON f.film_id = fd.film_id
                 LEFT JOIN directors d ON fd.director_id = d.director_id
                 WHERE fd.director_id = ?
-                GROUP BY f.film_id, g.genre_id
+                GROUP BY f.film_id,
+                         r.rating_id,
+                         g.genre_id,
+                         d.director_id
                 ORDER BY popularity DESC
                 """;
         return jdbcTemplate.query(sql, rs -> {
@@ -486,20 +487,15 @@ public class FilmDbStorage implements FilmStorage {
                        g.genre_id,
                        g.genre_title,
                        d.director_id,
-                       d.director_name,
-                       COUNT(fl_all.user_id) AS popularity
+                       d.director_name
                 FROM films f
-                JOIN film_like fl1 ON f.film_id = fl1.film_id
-                JOIN film_like fl2 ON f.film_id = fl2.film_id
-                LEFT JOIN film_like fl_all ON f.film_id = fl_all.film_id
+                JOIN film_director fd ON f.film_id = fd.film_id
                 LEFT JOIN rating r ON f.rating_id = r.rating_id
                 LEFT JOIN film_genre fg ON f.film_id = fg.film_id
                 LEFT JOIN genres g ON fg.genre_id = g.genre_id
-                LEFT JOIN film_director fd ON f.film_id = fd.film_id
                 LEFT JOIN directors d ON fd.director_id = d.director_id
                 WHERE fd.director_id = ?
-                GROUP BY f.film_id, g.genre_id
-                ORDER BY release_date DESC
+                ORDER BY f.release_date
                 """;
         return jdbcTemplate.query(sql, rs -> {
 
