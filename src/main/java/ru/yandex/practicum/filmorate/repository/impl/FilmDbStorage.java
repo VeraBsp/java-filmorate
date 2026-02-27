@@ -54,6 +54,7 @@ public class FilmDbStorage implements FilmStorage {
         int filmId = keyHolder.getKey().intValue();
         film.setId(filmId);
         saveFilmGenres(filmId, film.getGenres());
+        saveFilmDirector(filmId, film.getDirectors());
         log.info("Создан новый фильм: {} (id={})", film.getName(), filmId);
         return findById(filmId);
     }
@@ -149,6 +150,7 @@ public class FilmDbStorage implements FilmStorage {
             throw new ObjectNotFoundException("Фильм с id=" + film.getId() + " не найден");
         }
         updateFilmGenres(film.getId(), film.getGenres());
+        updateFilmDirectors(film.getId(), film.getDirectors());
         return findById(film.getId());
     }
 
@@ -575,14 +577,25 @@ public class FilmDbStorage implements FilmStorage {
         if (genres == null || genres.isEmpty()) {
             return;
         }
-
         String sql = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
-
         for (Genre genre : genres) {
             validateGenreExists(genre.getId());
             jdbcTemplate.update(sql, filmId, genre.getId());
         }
     }
+
+    private void saveFilmDirector(int filmId, Set<Director> directors) {
+        if (directors == null || directors.isEmpty()) {
+            return;
+        }
+        String sql = "INSERT INTO film_director (film_id, director_id) VALUES (?, ?)";
+        jdbcTemplate.batchUpdate(sql, directors, directors.size(),
+                (ps, director) -> {
+                    ps.setInt(1, filmId);
+                    ps.setInt(2, director.getId());
+                });
+    }
+
 
     private void updateFilmGenres(int filmId, Set<Genre> genres) {
         String deleteSql = "DELETE FROM film_genre WHERE film_id = ?";
@@ -596,6 +609,21 @@ public class FilmDbStorage implements FilmStorage {
                     validateGenreExists(genre.getId());
                     ps.setInt(1, filmId);
                     ps.setInt(2, genre.getId());
+                });
+    }
+
+    private void updateFilmDirectors(int filmId, Set<Director> directors) {
+        String deleteSql = "DELETE FROM film_director WHERE film_id = ?";
+        jdbcTemplate.update(deleteSql, filmId);
+        if (directors == null || directors.isEmpty()) {
+            return;
+        }
+        String insertSql = "INSERT INTO film_director (film_id, director_id) VALUES (?, ?)";
+        jdbcTemplate.batchUpdate(insertSql, directors, directors.size(),
+                (ps, director) -> {
+                    validateGenreExists(director.getId());
+                    ps.setInt(1, filmId);
+                    ps.setInt(2, director.getId());
                 });
     }
 }
