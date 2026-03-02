@@ -70,6 +70,7 @@ public class UserDbStorage implements UserStorage {
         if (user.getId() <= 0) {
             throw new IncorrectParameterException("Id пользователя указан некорректно");
         }
+        findById(user.getId());
         validateEmailUniquenessForUpdate(user);
         String sql = """
                 UPDATE users

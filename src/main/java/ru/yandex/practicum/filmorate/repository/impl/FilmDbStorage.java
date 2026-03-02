@@ -497,7 +497,7 @@ public class FilmDbStorage implements FilmStorage {
                 LEFT JOIN genres g ON fg.genre_id = g.genre_id
                 LEFT JOIN directors d ON fd.director_id = d.director_id
                 WHERE fd.director_id = ?
-                ORDER BY f.release_date DESC, f.film_id
+                ORDER BY f.release_date, f.film_id
                 """;
         return jdbcTemplate.query(sql, rs -> {
 
@@ -573,6 +573,16 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
+    private void validateDirectorExists(int directorId) {
+        String sql = "SELECT COUNT(*) FROM directors WHERE director_id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, directorId);
+
+        if (count == null || count == 0) {
+            log.warn("Режиссер с id={} не найден", directorId);
+            throw new ObjectNotFoundException("Режиссер с id=" + directorId + " не найден");
+        }
+    }
+
     private void saveFilmGenres(int filmId, Set<Genre> genres) {
         if (genres == null || genres.isEmpty()) {
             return;
@@ -591,6 +601,7 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "INSERT INTO film_director (film_id, director_id) VALUES (?, ?)";
         jdbcTemplate.batchUpdate(sql, directors, directors.size(),
                 (ps, director) -> {
+                    validateDirectorExists(director.getId());
                     ps.setInt(1, filmId);
                     ps.setInt(2, director.getId());
                 });
@@ -621,6 +632,7 @@ public class FilmDbStorage implements FilmStorage {
         String insertSql = "INSERT INTO film_director (film_id, director_id) VALUES (?, ?)";
         jdbcTemplate.batchUpdate(insertSql, directors, directors.size(),
                 (ps, director) -> {
+                    validateDirectorExists(director.getId());
                     ps.setInt(1, filmId);
                     ps.setInt(2, director.getId());
                 });
