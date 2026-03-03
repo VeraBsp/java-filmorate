@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.repository.DirectorStorage;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
 import ru.yandex.practicum.filmorate.repository.UserStorage;
 
@@ -13,13 +14,15 @@ import java.util.List;
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final DirectorStorage directorStorage;
 
     @Autowired
     public FilmService(
             @Qualifier("filmDbStorage") FilmStorage filmStorage,
-            @Qualifier("userDbStorage") UserStorage userStorage) {
+            @Qualifier("userDbStorage") UserStorage userStorage, DirectorStorage directorStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.directorStorage = directorStorage;
     }
 
     public Film create(Film film) {
@@ -63,5 +66,15 @@ public class FilmService {
     public void delete(int filmId) {
         filmStorage.findById(filmId);
         filmStorage.delete(filmId);
+    }
+
+    public List<Film> findAllFilmsByDirectorIdSortByLikes(int directorId) {
+        directorStorage.findById(directorId);
+        return filmStorage.findAllFilmsByDirectorIdSortByLikes(directorId);
+    }
+
+    public List<Film> findAllFilmsByDirectorIdSortByYear(int directorId) {
+        directorStorage.findById(directorId);
+        return filmStorage.findAllFilmsByDirectorIdSortByYear(directorId);
     }
 }

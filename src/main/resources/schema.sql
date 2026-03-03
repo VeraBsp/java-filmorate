@@ -32,6 +32,11 @@ CREATE TABLE IF NOT EXISTS rating (
 	rating_title VARCHAR(50) NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS directors (
+	director_id INT PRIMARY KEY AUTO_INCREMENT,
+	director_name VARCHAR(250) NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS films (
 	film_id INT PRIMARY KEY AUTO_INCREMENT,
 	film_name VARCHAR(255) NOT NULL,
@@ -48,6 +53,14 @@ CREATE TABLE IF NOT EXISTS film_genre (
     PRIMARY KEY (film_id, genre_id),
     FOREIGN KEY (film_id) REFERENCES films(film_id) ON DELETE CASCADE,
     FOREIGN KEY (genre_id) REFERENCES genres(genre_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS film_director (
+    film_id INT NOT NULL,
+    director_id INT NOT NULL,
+    PRIMARY KEY (film_id, director_id),
+    FOREIGN KEY (film_id) REFERENCES films(film_id) ON DELETE CASCADE,
+    FOREIGN KEY (director_id) REFERENCES directors(director_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS film_like (

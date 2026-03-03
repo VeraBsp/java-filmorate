@@ -9,14 +9,9 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Rating;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.repository.impl.FilmDbStorage;
-import ru.yandex.practicum.filmorate.repository.impl.GenreDbStorage;
-import ru.yandex.practicum.filmorate.repository.impl.RatingDbStorage;
-import ru.yandex.practicum.filmorate.repository.impl.UserDbStorage;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.repository.DirectorStorage;
+import ru.yandex.practicum.filmorate.repository.impl.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -28,12 +23,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @JdbcTest
-@Import({UserDbStorage.class, FilmDbStorage.class, GenreDbStorage.class, RatingDbStorage.class})
+@Import({UserDbStorage.class, FilmDbStorage.class, GenreDbStorage.class, RatingDbStorage.class, DirectorDbStorage.class})
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmorateApplicationTests {
     private final UserDbStorage userStorage;
     private final FilmDbStorage filmStorage;
+    private final DirectorStorage directorStorage;
     private User user1;
     private User user2;
     private User friend1;
@@ -41,6 +37,8 @@ class FilmorateApplicationTests {
     private Film film1;
     private Film film2;
     private GenreDbStorage genreDbStorage;
+    private Director director1;
+    private Director director2;
     Genre genre1;
     Genre genre2;
     Rating rating;
@@ -91,6 +89,12 @@ class FilmorateApplicationTests {
         film2.setReleaseDate(LocalDate.of(2000, 3, 31));
         film2.setMpa(rating);
         film2.setGenres(Set.of(genre1, genre2));
+        director1 = new Director();
+        director1.setId(1);
+        director1.setName("director1");
+        director2 = new Director();
+        director2.setId(2);
+        director2.setName("director2");
     }
 
     @Test
@@ -475,6 +479,56 @@ class FilmorateApplicationTests {
         Film createdFilm = filmStorage.create(film1);
         filmStorage.delete(createdFilm.getId());
         assertThatThrownBy(() -> filmStorage.findById(createdFilm.getId()))
+                .isInstanceOf(ObjectNotFoundException.class);
+    }
+
+    @Test
+    public void testFindDirectorById() {
+        directorStorage.create(director1);
+        Director foundDirector = directorStorage.findById(director1.getId());
+
+        assertThat(foundDirector)
+                .isNotNull()
+                .hasFieldOrPropertyWithValue("id", director1.getId());
+    }
+
+    @Test
+    public void testCreateDirector() {
+        Director createdDirector = directorStorage.create(director1);
+        assertThat(createdDirector)
+                .isNotNull()
+                .hasFieldOrProperty("id")
+                .hasFieldOrPropertyWithValue("name", "director1");
+
+        Director directorFromDb = directorStorage.findById(createdDirector.getId());
+        assertThat(directorFromDb)
+                .isNotNull()
+                .hasFieldOrPropertyWithValue("id", createdDirector.getId())
+                .hasFieldOrPropertyWithValue("name", "director1");
+    }
+
+    @Test
+    public void testUpdateDirector() {
+        Director createdDirector = directorStorage.create(director1);
+
+        int originalId = createdDirector.getId();
+        createdDirector.setName("Updated Name Director1");
+
+        Director updatedDirector = directorStorage.update(createdDirector);
+        assertThat(updatedDirector.getId()).isEqualTo(originalId);
+        assertThat(updatedDirector.getName()).isEqualTo("Updated Name Director1");
+
+        Director directorFromDb = directorStorage.findById(originalId);
+
+        assertThat(directorFromDb.getId()).isEqualTo(originalId);
+        assertThat(directorFromDb.getName()).isEqualTo("Updated Name Director1");
+    }
+
+    @Test
+    public void testDeleteDirector() {
+        Director createdDirector = directorStorage.create(director1);
+        directorStorage.delete(createdDirector.getId());
+        assertThatThrownBy(() -> directorStorage.findById(createdDirector.getId()))
                 .isInstanceOf(ObjectNotFoundException.class);
     }
 }
