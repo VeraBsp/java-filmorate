@@ -1,13 +1,13 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import jakarta.validation.ValidationException;
 import jakarta.validation.constraints.Positive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -93,6 +93,6 @@ public class FilmController {
         if (sortBy.equalsIgnoreCase("year")) {
             return filmService.findAllFilmsByDirectorIdSortByYear(directorId);
         }
-        throw new ValidationException("sortBy должен быть 'year' или 'likes'");
+        throw new IncorrectParameterException("sortBy должен быть 'year' или 'likes'");
     }
 }

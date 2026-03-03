@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.repository.DirectorStorage;
@@ -77,12 +78,12 @@ public class DirectorDbStorage implements DirectorStorage {
     @Override
     @Transactional
     public Director update(Director director) {
+        if (director.getId() <= 0) {
+            throw new IncorrectParameterException("Id директора указан некорректно");
+        }
         findById(director.getId());
         String sql = "update directors set director_name= ? WHERE director_id= ?";
-        int rows = jdbcTemplate.update(sql, director.getName(), director.getId());
-        if (rows == 0) {
-            throw new ObjectNotFoundException("Режиссер с id=" + director.getId() + " не найден");
-        }
+        jdbcTemplate.update(sql, director.getName(), director.getId());
         return findById(director.getId());
     }
 
@@ -90,10 +91,7 @@ public class DirectorDbStorage implements DirectorStorage {
     public void delete(int directorId) {
         findById(directorId);
         String sql = "delete from directors where director_id= ?";
-        int rows = jdbcTemplate.update(sql, directorId);
-        if (rows == 0) {
-            throw new ObjectNotFoundException("Режиссер с id=" + directorId + " не найден");
-        }
+        jdbcTemplate.update(sql, directorId);
         log.info("Режиссер с id={} удален", directorId);
     }
 }
