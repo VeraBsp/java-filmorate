@@ -531,8 +531,9 @@ class FilmorateApplicationTests {
         assertThatThrownBy(() -> directorStorage.findById(createdDirector.getId()))
                 .isInstanceOf(ObjectNotFoundException.class);
     }
+
     @Test
-    void shouldFindFilmByTitle() {
+    public void shouldFindFilmByTitle() {
         filmStorage.create(film1);
         filmStorage.create(film2);
         List<Film> result = filmStorage.searchFilms("Matrix", "title");
@@ -542,7 +543,7 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    void shouldFindFilmByDirector() {
+    public void shouldFindFilmByDirector() {
         directorStorage.create(director1);
         filmStorage.create(film1);
         filmStorage.addDirectorToFilm(film1.getId(), director1.getId());
@@ -552,7 +553,7 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    void shouldFindFilmByTitleAndDirector() {
+    public void shouldFindFilmByTitleAndDirector() {
         directorStorage.create(director1);
         filmStorage.create(film1);
         filmStorage.addDirectorToFilm(film1.getId(), director1.getId());
@@ -561,7 +562,7 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    void shouldSortByPopularity() {
+    public void shouldSortByPopularity() {
         userStorage.create(user1);
         userStorage.create(user2);
         filmStorage.create(film1);
@@ -574,7 +575,7 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    void shouldReturnEmptyListIfNothingFound() {
+    public void shouldReturnEmptyListIfNothingFound() {
         filmStorage.create(film1);
         List<Film> result = filmStorage.searchFilms("NonExisting", "title");
         assertTrue(result.isEmpty());
