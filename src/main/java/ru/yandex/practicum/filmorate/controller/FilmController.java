@@ -87,12 +87,13 @@ public class FilmController {
             @RequestParam(defaultValue = "year") String sortBy) {
         log.info("Получен запрос на получение фильмов режиссера с id={}, сортировка={}",
                 directorId, sortBy);
-        if (sortBy.equalsIgnoreCase("likes")) {
-            return filmService.findAllFilmsByDirectorIdSortByLikes(directorId);
-        }
-        if (sortBy.equalsIgnoreCase("year")) {
-            return filmService.findAllFilmsByDirectorIdSortByYear(directorId);
-        }
-        throw new IncorrectParameterException("sortBy должен быть 'year' или 'likes'");
+        return filmService.findFilmsByDirectorIdSortByYearAndTitle(directorId, sortBy);
+
+    }
+
+    @GetMapping("/search")
+    public List<Film> sortByDirectorAndTitle(@RequestParam String query,
+                                             @RequestParam(required = false) String by) {
+        return filmService.searchFilms(query, by);
     }
 }

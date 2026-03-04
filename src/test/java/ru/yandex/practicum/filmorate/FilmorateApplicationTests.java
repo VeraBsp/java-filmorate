@@ -531,4 +531,52 @@ class FilmorateApplicationTests {
         assertThatThrownBy(() -> directorStorage.findById(createdDirector.getId()))
                 .isInstanceOf(ObjectNotFoundException.class);
     }
+    @Test
+    void shouldFindFilmByTitle() {
+        filmStorage.create(film1);
+        filmStorage.create(film2);
+        List<Film> result = filmStorage.searchFilms("Matrix", "title");
+        assertEquals(2, result.size());
+        assertTrue(result.stream().anyMatch(f -> f.getName().equals("Matrix")));
+        assertTrue(result.stream().anyMatch(f -> f.getName().equals("Matrix1")));
+    }
+
+    @Test
+    void shouldFindFilmByDirector() {
+        directorStorage.create(director1);
+        filmStorage.create(film1);
+        filmStorage.addDirectorToFilm(film1.getId(), director1.getId());
+        List<Film> result = filmStorage.searchFilms("director1", "director");
+        assertEquals(1, result.size());
+        assertEquals("Matrix", result.get(0).getName());
+    }
+
+    @Test
+    void shouldFindFilmByTitleAndDirector() {
+        directorStorage.create(director1);
+        filmStorage.create(film1);
+        filmStorage.addDirectorToFilm(film1.getId(), director1.getId());
+        List<Film> result = filmStorage.searchFilms("Matrix", "director,title");
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void shouldSortByPopularity() {
+        userStorage.create(user1);
+        userStorage.create(user2);
+        filmStorage.create(film1);
+        filmStorage.create(film2);
+        filmStorage.addLikeFilm(film1.getId(), user1.getId());
+        filmStorage.addLikeFilm(film1.getId(), user2.getId());
+        filmStorage.addLikeFilm(film2.getId(), user1.getId());
+        List<Film> result = filmStorage.searchFilms("Matrix", "title");
+        assertEquals(film1.getId(), result.get(0).getId());
+    }
+
+    @Test
+    void shouldReturnEmptyListIfNothingFound() {
+        filmStorage.create(film1);
+        List<Film> result = filmStorage.searchFilms("NonExisting", "title");
+        assertTrue(result.isEmpty());
+    }
 }
