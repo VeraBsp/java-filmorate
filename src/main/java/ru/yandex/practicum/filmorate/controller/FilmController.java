@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -87,12 +86,13 @@ public class FilmController {
             @RequestParam(defaultValue = "year") String sortBy) {
         log.info("Получен запрос на получение фильмов режиссера с id={}, сортировка={}",
                 directorId, sortBy);
-        if (sortBy.equalsIgnoreCase("likes")) {
-            return filmService.findAllFilmsByDirectorIdSortByLikes(directorId);
-        }
-        if (sortBy.equalsIgnoreCase("year")) {
-            return filmService.findAllFilmsByDirectorIdSortByYear(directorId);
-        }
-        throw new IncorrectParameterException("sortBy должен быть 'year' или 'likes'");
+        return filmService.findFilmsByDirectorIdSortByYearAndTitle(directorId, sortBy);
+
+    }
+
+    @GetMapping("/search")
+    public List<Film> sortByDirectorAndTitle(@RequestParam String query,
+                                             @RequestParam (defaultValue = "title") String by) {
+        return filmService.searchFilms(query, by);
     }
 }

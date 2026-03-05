@@ -77,4 +77,22 @@ public class FilmService {
         directorStorage.findById(directorId);
         return filmStorage.findAllFilmsByDirectorIdSortByYear(directorId);
     }
+
+    public List<Film> searchFilms(String query, String by) {
+        return filmStorage.searchFilms(query, by);
+    }
+
+    public void addDirectorToFilm(int filmId, int directorId) {
+        filmStorage.addDirectorToFilm(filmId, directorId);
+    }
+
+    public List<Film> findFilmsByDirectorIdSortByYearAndTitle(int directorId, String sortBy) {
+        if (sortBy.equalsIgnoreCase("likes")) {
+            return filmStorage.findAllFilmsByDirectorIdSortByLikes(directorId);
+        }
+        if (sortBy.equalsIgnoreCase("year")) {
+            return filmStorage.findAllFilmsByDirectorIdSortByYear(directorId);
+        }
+        throw new IllegalArgumentException("sortBy должен быть 'year' или 'likes'");
+    }
 }
