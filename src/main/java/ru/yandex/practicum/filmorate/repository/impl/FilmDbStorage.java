@@ -296,6 +296,22 @@ public class FilmDbStorage implements FilmStorage {
                 .toList();
     }
 
+    public List<Film> getPopularFilm() {
+        String sql = """
+                SELECT f.film_id
+                FROM films f
+                LEFT JOIN film_like fl ON f.film_id = fl.film_id
+                GROUP BY f.film_id
+                ORDER BY COUNT(fl.user_id) DESC
+                """;
+
+        List<Integer> idPopularFilms = jdbcTemplate.queryForList(sql, Integer.class);
+
+        return idPopularFilms.stream()
+                .map(this::findById)
+                .toList();
+    }
+
     @Override
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
         String sql = """

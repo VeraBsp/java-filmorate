@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.repository.DirectorStorage;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
@@ -89,11 +88,11 @@ public class FilmService {
 
     public List<Film> findFilmsByDirectorIdSortByYearAndTitle(int directorId, String sortBy) {
         if (sortBy.equalsIgnoreCase("likes")) {
-            return  filmStorage.findAllFilmsByDirectorIdSortByLikes(directorId);
+            return filmStorage.findAllFilmsByDirectorIdSortByLikes(directorId);
         }
         if (sortBy.equalsIgnoreCase("year")) {
-            return  filmStorage.findAllFilmsByDirectorIdSortByYear(directorId);
+            return filmStorage.findAllFilmsByDirectorIdSortByYear(directorId);
         }
-        throw new IncorrectParameterException("sortBy должен быть 'year' или 'likes'");
+        throw new IllegalArgumentException("sortBy должен быть 'year' или 'likes'");
     }
 }
