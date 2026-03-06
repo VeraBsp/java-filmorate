@@ -19,8 +19,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @JdbcTest
 @Import({UserDbStorage.class, FilmDbStorage.class, GenreDbStorage.class, RatingDbStorage.class, DirectorDbStorage.class})
@@ -69,7 +68,7 @@ class FilmorateApplicationTests {
         film1.setName("Matrix");
         film1.setDescription("Sci-fi");
         film1.setDuration(136);
-        film1.setReleaseDate(LocalDate.of(1999, 3, 31));
+        film1.setReleaseDate(LocalDate.of(2025, 3, 31));
 
         rating = new Rating();
         rating.setId(1); // должен существовать в data.sql
@@ -579,5 +578,44 @@ class FilmorateApplicationTests {
         filmStorage.create(film1);
         List<Film> result = filmStorage.searchFilms("NonExisting", "title");
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    public void shouldReturnMostPopularFilmsByYear() {
+        userStorage.create(user1);
+        userStorage.create(user2);
+        Film createdFilm1 = filmStorage.create(film1);
+        Film createdFilm2 = filmStorage.create(film2);
+        filmStorage.addLikeFilm(createdFilm1.getId(), user1.getId());
+        filmStorage.addLikeFilm(createdFilm1.getId(), user2.getId());
+        filmStorage.addLikeFilm(createdFilm2.getId(), user1.getId());
+        List<Film> films = filmStorage.getMostPopularFilm(2025, null, 10);
+        assertNotNull(films);
+        assertEquals(1, films.size());
+        assertEquals(createdFilm1.getId(), films.get(0).getId());
+    }
+
+    @Test
+    void shouldReturnMostPopularFilmsByGenre() {
+        userStorage.create(user1);
+        userStorage.create(user2);
+        Film createdFilm1 = filmStorage.create(film1);
+        Film createdFilm2 = filmStorage.create(film2);
+        filmStorage.addLikeFilm(createdFilm2.getId(), user1.getId());
+        filmStorage.addLikeFilm(createdFilm2.getId(), user2.getId());
+        List<Film> films = filmStorage.getMostPopularFilm(null, 1, 10);
+        assertFalse(films.isEmpty());
+        assertEquals(createdFilm2.getId(), films.get(0).getId());
+    }
+
+    @Test
+    void shouldReturnMostPopularFilmsByYearAndGenre() {
+        userStorage.create(user1);
+        Film createdFilm1 = filmStorage.create(film1);
+        Film createdFilm2 = filmStorage.create(film2);
+        filmStorage.addLikeFilm(createdFilm1.getId(), user1.getId());
+        List<Film> films = filmStorage.getMostPopularFilm(2025, 1, 10);
+        assertEquals(1, films.size());
+        assertEquals(createdFilm1.getId(), films.get(0).getId());
     }
 }
