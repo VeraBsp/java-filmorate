@@ -673,6 +673,100 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(sql, filmId, directorId);
     }
 
+    @Override
+    public List<Film> getMostPopularFilm(Integer year, Integer genreId, Integer count) {
+        if (year == null && genreId == null) {
+            return getPopularFilm(count);
+        }
+        StringBuilder sql = new StringBuilder("""
+                    SELECT
+                        f.film_id,
+                        f.film_name,
+                        f.description,
+                        f.release_date,
+                        f.duration,
+                        r.rating_id,
+                        r.rating_title,
+                        g.genre_id,
+                        g.genre_title,
+                        d.director_id,
+                        d.director_name,
+                        COALESCE(l.popularity, 0) AS popularity
+                    FROM films f
+                    LEFT JOIN rating r ON f.rating_id = r.rating_id
+                    LEFT JOIN film_genre fg ON f.film_id = fg.film_id
+                    LEFT JOIN genres g ON fg.genre_id = g.genre_id
+                    LEFT JOIN film_director fd ON f.film_id = fd.film_id
+                    LEFT JOIN directors d ON fd.director_id = d.director_id
+                    LEFT JOIN (
+                        SELECT film_id, COUNT(user_id) AS popularity
+                        FROM film_like
+                        GROUP BY film_id
+                    ) l ON f.film_id = l.film_id
+                    WHERE
+                """);
+
+        List<Object> params = new ArrayList<>();
+
+        if (year != null && genreId != null) {
+            sql.append(" EXTRACT(YEAR FROM f.release_date) = ? AND g.genre_id = ?");
+            params.add(year);
+            params.add(genreId);
+        } else if (year != null) {
+            sql.append(" EXTRACT(YEAR FROM f.release_date) = ?");
+            params.add(year);
+        } else if (genreId != null) {
+            sql.append(" g.genre_id = ?");
+            params.add(genreId);
+        }
+
+        sql.append(" ORDER BY popularity DESC");
+        sql.append(" LIMIT ?");
+        params.add(count);
+
+        return jdbcTemplate.query(sql.toString(), rs -> {
+            Map<Integer, Film> films = new LinkedHashMap<>();
+            while (rs.next()) {
+                int filmId = rs.getInt("film_id");
+                Film film = films.get(filmId);
+                if (film == null) {
+                    film = new Film();
+                    film.setId(filmId);
+                    film.setName(rs.getString("film_name"));
+                    film.setDescription(rs.getString("description"));
+                    film.setReleaseDate(rs.getDate("release_date").toLocalDate());
+                    film.setDuration(rs.getInt("duration"));
+
+                    int ratingId = rs.getInt("rating_id");
+                    if (!rs.wasNull()) {
+                        film.setMpa(new Rating(
+                                ratingId,
+                                rs.getString("rating_title")
+                        ));
+                    }
+                    film.setGenres(new LinkedHashSet<>());
+                    film.setDirectors(new LinkedHashSet<>());
+                    films.put(filmId, film);
+                }
+                int genrId = rs.getInt("genre_id");
+                if (!rs.wasNull()) {
+                    film.getGenres().add(new Genre(
+                            genrId,
+                            rs.getString("genre_title")
+                    ));
+                }
+                int directorId = rs.getInt("director_id");
+                if (!rs.wasNull()) {
+                    film.getDirectors().add(new Director(
+                            directorId,
+                            rs.getString("director_name")
+                    ));
+                }
+            }
+            return new ArrayList<>(films.values());
+        }, params.toArray());
+    }
+
     private void validateGenreExists(int genreId) {
         String sql = "SELECT COUNT(*) FROM genres WHERE genre_id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, genreId);

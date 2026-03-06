@@ -32,5 +32,7 @@ public interface FilmStorage {
     List<Film> searchFilms(String query, String by);
 
     void addDirectorToFilm(int filmId, int directorId);
+
+    List<Film> getMostPopularFilm(Integer year, Integer genreId, Integer count);
 }
 
