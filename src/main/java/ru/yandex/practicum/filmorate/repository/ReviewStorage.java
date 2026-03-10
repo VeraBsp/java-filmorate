@@ -1,16 +1,15 @@
 package ru.yandex.practicum.filmorate.repository;
 
-import jakarta.validation.Valid;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.util.List;
 
 public interface ReviewStorage {
-    Review create(@Valid Review review);
+    Review create(Review review);
 
     Review findById(int id);
 
-    Review update(@Valid Review review);
+    Review update(Review review);
 
     void delete(int id);
 
