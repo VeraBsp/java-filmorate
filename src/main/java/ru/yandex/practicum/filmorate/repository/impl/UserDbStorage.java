@@ -116,7 +116,6 @@ public class UserDbStorage implements UserStorage {
         if (count > 0) {
             log.info("Пользователь с id={} уже является другом пользователя id={}", friendId, userId);
             throw new IncorrectParameterException("Пользователи уже друзья.");
-            //    return;
         }
         String sql = "INSERT INTO friends (user_id, friend_id, friend_status_id) VALUES (?, ?, ?)";
         jdbcTemplate.update(sql, userId, friendId, 2);
