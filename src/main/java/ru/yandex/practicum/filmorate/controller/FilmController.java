@@ -69,9 +69,6 @@ public class FilmController {
         log.info("Получен запрос на получение популярных фильмов: count={}, year={}, genreId={}",
                 count, year, genreId);
 
-        if (genreId == null && year == null) {
-            return filmService.getPopularFilm(count);
-        }
         return filmService.getMostPopularFilm(year, genreId, count);
     }
 
@@ -101,7 +98,7 @@ public class FilmController {
 
     @GetMapping("/search")
     public List<Film> sortByDirectorAndTitle(@RequestParam String query,
-                                             @RequestParam (defaultValue = "title") String by) {
+                                             @RequestParam(defaultValue = "title") String by) {
         return filmService.searchFilms(query, by);
     }
 }
