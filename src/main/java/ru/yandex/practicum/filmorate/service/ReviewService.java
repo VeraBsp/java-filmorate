@@ -23,8 +23,8 @@ public class ReviewService {
     }
 
     public Review create(Review review) {
-        if (review.getIsPositive() == null) {
-            review.setIsPositive(false);
+        if (review.getPositive() == null) {
+            review.setPositive(false);
         }
         userStorage.findById(review.getUserId());
         filmStorage.findById(review.getFilmId());
