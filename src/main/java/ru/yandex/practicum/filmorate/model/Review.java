@@ -16,7 +16,7 @@ public class Review {
     @NotBlank
     private String content;
     @JsonProperty("isPositive")
-    private boolean isPositive;
+    private Boolean isPositive;
     @NotNull
     private Integer userId;
     @NotNull
