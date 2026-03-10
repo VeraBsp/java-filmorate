@@ -12,14 +12,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 
 public class Review {
-    private int reviewId;
+    private Integer reviewId;
     @NotBlank
     private String content;
     @JsonProperty("isPositive")
     private boolean isPositive;
     @NotNull
-    private int userId;
+    private Integer userId;
     @NotNull
-    private int filmId;
+    private Integer filmId;
     private int useful;
 }

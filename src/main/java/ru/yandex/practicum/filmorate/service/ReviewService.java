@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.service;
 
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Review;
@@ -23,7 +22,7 @@ public class ReviewService {
         this.userStorage = userStorage;
     }
 
-    public Review create(@Valid Review review) {
+    public Review create(Review review) {
         userStorage.findById(review.getUserId());
         filmStorage.findById(review.getFilmId());
         return reviewStorage.create(review);
@@ -33,7 +32,7 @@ public class ReviewService {
         return reviewStorage.findById(id);
     }
 
-    public Review update(@Valid Review review) {
+    public Review update(Review review) {
         return reviewStorage.update(review);
     }
 
@@ -42,7 +41,9 @@ public class ReviewService {
     }
 
     public List<Review> getAll(Integer filmId, Integer count) {
-        filmStorage.findById(filmId);
+        if (filmId != null) {
+            filmStorage.findById(filmId);
+        }
         return reviewStorage.getAll(filmId, count);
     }
 
