@@ -68,16 +68,6 @@ public class FilmService {
         filmStorage.delete(filmId);
     }
 
-    public List<Film> findAllFilmsByDirectorIdSortByLikes(int directorId) {
-        directorStorage.findById(directorId);
-        return filmStorage.findAllFilmsByDirectorIdSortByLikes(directorId);
-    }
-
-    public List<Film> findAllFilmsByDirectorIdSortByYear(int directorId) {
-        directorStorage.findById(directorId);
-        return filmStorage.findAllFilmsByDirectorIdSortByYear(directorId);
-    }
-
     public List<Film> searchFilms(String query, String by) {
         return filmStorage.searchFilms(query, by);
     }
@@ -94,5 +84,12 @@ public class FilmService {
             return filmStorage.findAllFilmsByDirectorIdSortByYear(directorId);
         }
         throw new IllegalArgumentException("sortBy должен быть 'year' или 'likes'");
+    }
+
+    public List<Film> getMostPopularFilm(Integer year, Integer genreId, Integer count) {
+        if (genreId == null && year == null) {
+            return filmStorage.getPopularFilm(count);
+        }
+        return filmStorage.getMostPopularFilm(year, genreId, count);
     }
 }
