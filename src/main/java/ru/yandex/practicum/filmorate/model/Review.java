@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class Review {
+    @NotNull
     private Integer reviewId;
     @NotBlank
     private String content;

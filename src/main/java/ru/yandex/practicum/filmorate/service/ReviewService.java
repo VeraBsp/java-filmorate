@@ -48,11 +48,13 @@ public class ReviewService {
     }
 
     public void addLike(int id, int userId) {
+        findById(id);
         userStorage.findById(userId);
         reviewStorage.addLike(id, userId);
     }
 
     public void addDislike(int id, int userId) {
+        findById(id);
         userStorage.findById(userId);
         reviewStorage.addDislike(id, userId);
     }

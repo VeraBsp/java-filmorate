@@ -8,7 +8,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.repository.ReviewStorage;
@@ -60,47 +59,34 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public Review update(Review review) {
-        if (review.getReviewId() <= 0) {
-            throw new IncorrectParameterException("Id отзыва указан некорректно");
-        }
         findById(review.getReviewId());
         String sql = """
                 UPDATE reviews
                 SET content = ?, is_positive = ?
                 WHERE review_id = ?
                 """;
-        int rows = jdbcTemplate.update(sql,
+        jdbcTemplate.update(sql,
                 review.getContent(),
                 review.getPositive(),
                 review.getReviewId()
         );
-        if (rows == 0) {
-            throw new ObjectNotFoundException("Отзыв с id=" + review.getReviewId() + " не найден");
-        }
         return findById(review.getReviewId());
     }
 
     @Override
     public void delete(int id) {
-        if (id <= 0) {
-            throw new IncorrectParameterException("Id отзыва указан некорректно");
-        }
         findById(id);
         String sql = "DELETE FROM reviews WHERE review_id = ?";
-        int rows = jdbcTemplate.update(sql, id);
-        if (rows == 0) {
-            log.warn("Отзыв с id={} не найден", id);
-            throw new IncorrectParameterException("Отзыв с заданным id не найден");
-        }
+        jdbcTemplate.update(sql, id);
         log.info("Отзыв с id={} успешно удалён.", id);
     }
 
     @Override
     public List<Review> getAll(Integer filmId, Integer count) {
         StringBuilder sql = new StringBuilder("""
-            SELECT *
-            FROM reviews
-            """);
+                SELECT *
+                FROM reviews
+                """);
 
         List<Object> params = new ArrayList<>();
         if (filmId != null) {
