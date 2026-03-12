@@ -74,7 +74,14 @@ public class ReviewService {
     }
 
     public void delete(int id) {
+        Review review = reviewStorage.findById(id);
         reviewStorage.delete(id);
+        feedService.addEvent(
+                review.getUserId(),
+                "REVIEW",
+                "REMOVE",
+                review.getReviewId()
+        );
     }
 
     public List<Review> getAll(Integer filmId, Integer count) {
