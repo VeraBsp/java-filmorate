@@ -11,7 +11,7 @@ import java.util.List;
 
 @Component
 public class FeedDbStorage implements FeedStorage {
-    private final Logger log = LoggerFactory.getLogger(ReviewDbStorage.class);
+    private final Logger log = LoggerFactory.getLogger(FeedDbStorage.class);
     private final JdbcTemplate jdbcTemplate;
 
     public FeedDbStorage(JdbcTemplate jdbcTemplate) {
@@ -20,6 +20,7 @@ public class FeedDbStorage implements FeedStorage {
 
     @Override
     public List<Feed> getFeed(int id) {
+        log.info("Получен запрос а получение ленты пользователя с id={}", id);
         String sql = "select * from event_feed where user_id = ?";
         List<Feed> feeds = jdbcTemplate.query(sql, (rs, rowNum) -> new Feed(
                 rs.getInt("event_id"),
@@ -45,6 +46,7 @@ public class FeedDbStorage implements FeedStorage {
                 System.currentTimeMillis(),
                 userId,
                 entityId);
+        log.info("У пользователя с id={} в ленту добавилось событие с id={} тип:{} свойство:{}", userId, entityId, eventType, operation);
     }
 
 
