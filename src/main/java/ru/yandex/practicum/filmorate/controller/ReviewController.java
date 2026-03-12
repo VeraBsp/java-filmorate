@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.ReviewDto;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
 import java.util.List;
@@ -22,9 +23,9 @@ public class ReviewController {
     }
 
     @PostMapping
-    public Review create(@Valid @RequestBody Review review) {
+    public Review create(@Valid @RequestBody ReviewDto reviewDto) {
         log.info("Получен запрос на создание отзыва");
-        return reviewService.create(review);
+        return reviewService.create(reviewDto);
     }
 
     @GetMapping("{id}")
@@ -34,9 +35,9 @@ public class ReviewController {
     }
 
     @PutMapping
-    public Review update(@Valid @RequestBody Review review) {
-        log.info("Получен запрос на обновление отзыва id={}", review.getReviewId());
-        return reviewService.update(review);
+    public Review update(@Valid @RequestBody ReviewDto reviewDto) {
+        log.info("Получен запрос на обновление отзыва id={}", reviewDto.getReviewId());
+        return reviewService.update(reviewDto);
     }
 
     @DeleteMapping("{id}")
