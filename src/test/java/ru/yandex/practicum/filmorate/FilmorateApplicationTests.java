@@ -767,6 +767,7 @@ class FilmorateApplicationTests {
         Review updated = reviewStorage.findById(review.getReviewId());
         assertEquals(1, updated.getUseful());
     }
+
     @Test
     void shouldAddEventToFeed() {
         User savedUser = userStorage.create(user1);
