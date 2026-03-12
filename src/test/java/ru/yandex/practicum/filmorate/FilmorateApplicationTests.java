@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.repository.DirectorStorage;
 import ru.yandex.practicum.filmorate.repository.impl.*;
+import ru.yandex.practicum.filmorate.service.FeedService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -22,7 +23,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 
 @JdbcTest
-@Import({UserDbStorage.class, FilmDbStorage.class, GenreDbStorage.class, RatingDbStorage.class, DirectorDbStorage.class, ReviewDbStorage.class})
+@Import({UserDbStorage.class,
+        FilmDbStorage.class,
+        GenreDbStorage.class,
+        RatingDbStorage.class,
+        DirectorDbStorage.class,
+        ReviewDbStorage.class,
+        FeedDbStorage.class,
+        FeedService.class})
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmorateApplicationTests {
@@ -30,6 +38,8 @@ class FilmorateApplicationTests {
     private final FilmDbStorage filmStorage;
     private final DirectorStorage directorStorage;
     private final ReviewDbStorage reviewStorage;
+    private final FeedService feedService;
+    private final FeedDbStorage feedStorage;
     private User user1;
     private User user2;
     private User friend1;
@@ -758,4 +768,35 @@ class FilmorateApplicationTests {
         assertEquals(1, updated.getUseful());
     }
 
+    @Test
+    void shouldAddEventToFeed() {
+        User savedUser = userStorage.create(user1);
+        feedService.addEvent(
+                savedUser.getId(),
+                "REVIEW",
+                "ADD",
+                1
+        );
+        List<Feed> feed = feedStorage.getFeed(savedUser.getId());
+        assertThat(feed).hasSize(1);
+        Feed event = feed.get(0);
+        assertThat(event.getUserId()).isEqualTo(savedUser.getId());
+        assertThat(event.getEventType()).isEqualTo("REVIEW");
+        assertThat(event.getOperation()).isEqualTo("ADD");
+        assertThat(event.getEntityId()).isEqualTo(1);
+        assertThat(event.getTimestamp()).isNotNull();
+    }
+
+    @Test
+    void shouldReturnAllUserFeedEvents() {
+        User savedUser = userStorage.create(user1);
+        feedService.addEvent(savedUser.getId(), "REVIEW", "ADD", 1);
+        feedService.addEvent(savedUser.getId(), "REVIEW", "UPDATE", 1);
+        feedService.addEvent(savedUser.getId(), "LIKE", "ADD", 5);
+        List<Feed> feed = feedStorage.getFeed(savedUser.getId());
+        assertThat(feed).hasSize(3);
+        assertThat(feed.get(0).getEventType()).isEqualTo("REVIEW");
+        assertThat(feed.get(1).getOperation()).isEqualTo("UPDATE");
+        assertThat(feed.get(2).getEventType()).isEqualTo("LIKE");
+    }
 }
