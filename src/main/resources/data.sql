@@ -1,7 +1,7 @@
 --INSERT INTO users (name, email, login, birthday) VALUES ('Иван', 'ivan@example.com', 'ivan_login', '1990-01-15');
 --INSERT INTO users (name, email, login, birthday) VALUES ('Мария', 'maria@example.com', 'maria_login', '1985-05-22');
 --INSERT INTO users (name, email, login, birthday) VALUES ('Петр', 'petr@example.com', 'petr_login', '2000-11-30');
---
+
 INSERT INTO genres (genre_title) VALUES ('Комедия'),
                                         ('Драма'),
                                         ('Мультфильм'),
@@ -23,14 +23,14 @@ INSERT INTO genres (genre_title) VALUES ('Комедия'),
 --('Роджер Аллерс'),
 --('Роб Минкофф'),
 --('Питер Фаррелли');
---
+
 INSERT INTO rating (rating_title) VALUES
 ('G'),
 ('PG'),
 ('PG-13'),
 ('R'),
 ('NC-17');
---
+
 --INSERT INTO films (film_name, description, duration, release_date, rating_id) VALUES
 --('Начало', 'Профессиональные воры проникают в сны, чтобы извлекать секреты.', 148, '2010-07-16', 3),
 --('Зеленая миля', 'История о необычном заключенном в блоке смертников.', 189, '1999-12-10', 4),
@@ -146,11 +146,11 @@ INSERT INTO rating (rating_title) VALUES
 --
 ---- Зеленая книга
 --(14, 13);
---
+
 INSERT INTO friends_status (friend_status_title) VALUES
 ('Запрос отправлен'),
 ('В друзьях');
---
+
 --INSERT INTO friends (user_id, friend_id, friend_status_id) VALUES
 --(1, 2, 2), -- Иван и Мария в друзьях
 --(3, 2, 1), -- Петр и Мария друзья
@@ -168,8 +168,11 @@ INSERT INTO friends_status (friend_status_title) VALUES
 --(2, 3),
 --(2, 4),
 --(2, 14),
+--(2, 7),
 --
 ---- Петр лайкнул
 --(3, 4),
+--(3, 7),
 --(3, 8),
+--(3, 1),
 --(3, 11);

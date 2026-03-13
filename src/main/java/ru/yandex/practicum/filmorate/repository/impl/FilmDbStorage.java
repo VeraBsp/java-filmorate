@@ -767,6 +767,44 @@ public class FilmDbStorage implements FilmStorage {
         }, params.toArray());
     }
 
+    @Override
+    public List<Film> getRecommendations(int id) {
+        String sql = """
+                    SELECT DISTINCT f.film_id
+                            FROM films f
+                            JOIN film_like fl ON f.film_id = fl.film_id
+                            WHERE fl.user_id IN (
+                                SELECT fl2.user_id
+                                FROM film_like fl1
+                                JOIN film_like fl2 ON fl1.film_id = fl2.film_id
+                                WHERE fl1.user_id = ?
+                                  AND fl2.user_id != ?
+                                GROUP BY fl2.user_id
+                                HAVING COUNT(*) = (
+                                    SELECT MAX(cnt)
+                                    FROM (
+                                        SELECT COUNT(*) AS cnt
+                                        FROM film_like fl1
+                                        JOIN film_like fl2 ON fl1.film_id = fl2.film_id
+                                        WHERE fl1.user_id = ?
+                                          AND fl2.user_id != ?
+                                        GROUP BY fl2.user_id
+                                    ) t
+                                )
+                            )
+                            AND f.film_id NOT IN (
+                                SELECT film_id
+                                FROM film_like
+                                WHERE user_id = ?
+                            )
+                """;
+        List<Integer> filmIds = jdbcTemplate.queryForList(sql, Integer.class, id, id, id, id, id);
+
+        return filmIds.stream()
+                .map(this::findById)
+                .toList();
+    }
+
     private void validateGenreExists(int genreId) {
         String sql = "SELECT COUNT(*) FROM genres WHERE genre_id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, genreId);
