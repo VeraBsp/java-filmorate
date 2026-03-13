@@ -774,7 +774,6 @@ public class FilmDbStorage implements FilmStorage {
                             FROM films f
                             JOIN film_like fl ON f.film_id = fl.film_id
                             WHERE fl.user_id IN (
-                
                                 SELECT fl2.user_id
                                 FROM film_like fl1
                                 JOIN film_like fl2 ON fl1.film_id = fl2.film_id
@@ -793,7 +792,6 @@ public class FilmDbStorage implements FilmStorage {
                                     ) t
                                 )
                             )
-                
                             AND f.film_id NOT IN (
                                 SELECT film_id
                                 FROM film_like
