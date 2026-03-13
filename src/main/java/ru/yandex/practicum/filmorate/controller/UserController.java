@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -74,5 +75,10 @@ public class UserController {
     public List<User> getCommonFriends(@PathVariable("id") int id, @PathVariable("otherId") int otherId) {
         log.info("Получен запрос на выборку общих друзей пользователей с id={} и id={}", id, otherId);
         return userService.getCommonFriends(id, otherId);
+    }
+
+    @GetMapping("{id}/recommendations")
+    public List<Film> getRecommendations(@PathVariable int id) {
+        return userService.getRecommendations(id);
     }
 }

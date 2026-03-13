@@ -34,5 +34,7 @@ public interface FilmStorage {
     void addDirectorToFilm(int filmId, int directorId);
 
     List<Film> getMostPopularFilm(Integer year, Integer genreId, Integer count);
+
+    List<Film> getRecommendations(int id);
 }
 
