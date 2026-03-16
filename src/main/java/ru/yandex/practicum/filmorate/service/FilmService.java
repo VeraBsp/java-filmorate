@@ -46,8 +46,9 @@ public class FilmService {
     public Film addLikeFilm(int filmId, int userId) {
         filmStorage.findById(filmId);
         userStorage.findById(userId);
+        Film film = filmStorage.addLikeFilm(filmId, userId);
         feedService.addEvent(userId, "LIKE", "ADD", filmId);
-        return filmStorage.addLikeFilm(filmId, userId);
+        return film;
     }
 
     public void deleteLikeFilm(int id, int userId) {

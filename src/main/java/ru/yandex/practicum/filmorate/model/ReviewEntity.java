@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Review {
+public class ReviewEntity {
     private Integer reviewId;
     private String content;
     @JsonProperty("isPositive")

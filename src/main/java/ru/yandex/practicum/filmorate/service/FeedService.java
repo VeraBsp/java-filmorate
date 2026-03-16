@@ -21,9 +21,7 @@ public class FeedService {
 
     public List<Feed> getFeed(int id) {
         userStorage.findById(id);
-        List<Feed> feeds = feedStorage.getFeed(id);
-        feeds.forEach(f -> f.setTimestamp(f.getTimestamp())); // можно оставить миллисекунды
-        return feeds;
+        return feedStorage.getFeed(id);
     }
 
     public void addEvent(int userId, String eventType, String operation, int entityId) {

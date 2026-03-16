@@ -20,7 +20,7 @@ public class FeedDbStorage implements FeedStorage {
 
     @Override
     public List<Feed> getFeed(int id) {
-        log.info("Получен запрос а получение ленты пользователя с id={}", id);
+        log.info("Получен запрос на получение ленты пользователя с id={}", id);
         String sql = "select * from event_feed where user_id = ?";
         List<Feed> feeds = jdbcTemplate.query(sql, (rs, rowNum) -> new Feed(
                 rs.getInt("event_id"),

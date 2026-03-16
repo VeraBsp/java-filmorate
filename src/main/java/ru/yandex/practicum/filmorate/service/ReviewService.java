@@ -3,8 +3,8 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
-import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.model.ReviewDto;
+import ru.yandex.practicum.filmorate.model.ReviewEntity;
+import ru.yandex.practicum.filmorate.model.ReviewRequest;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
 import ru.yandex.practicum.filmorate.repository.ReviewStorage;
 import ru.yandex.practicum.filmorate.repository.UserStorage;
@@ -26,10 +26,10 @@ public class ReviewService {
         this.feedService = feedService;
     }
 
-    public Review create(ReviewDto dto) {
+    public ReviewEntity create(ReviewRequest dto) {
         userStorage.findById(dto.getUserId());
         filmStorage.findById(dto.getFilmId());
-        Review review = new Review(
+        ReviewEntity reviewEntity = new ReviewEntity(
                 null,
                 dto.getContent(),
                 dto.getPositive(),
@@ -37,54 +37,54 @@ public class ReviewService {
                 dto.getFilmId(),
                 0
         );
-        Review createdReview = reviewStorage.create(review);
+        ReviewEntity createdReviewEntity = reviewStorage.create(reviewEntity);
         feedService.addEvent(
-                createdReview.getUserId(),
+                createdReviewEntity.getUserId(),
                 "REVIEW",
                 "ADD",
-                createdReview.getReviewId()
+                createdReviewEntity.getReviewId()
         );
 
-        return createdReview;
+        return createdReviewEntity;
     }
 
-    public Review findById(int id) {
+    public ReviewEntity findById(int id) {
         return reviewStorage.findById(id);
     }
 
-    public Review update(ReviewDto dto) {
+    public ReviewEntity update(ReviewRequest dto) {
         if (dto.getReviewId() == null || dto.getReviewId() <= 0) {
             throw new IncorrectParameterException("Id отзыва указан некорректно");
         }
-        Review existingReview = reviewStorage.findById(dto.getReviewId());
-        if (!existingReview.getUserId().equals(dto.getUserId())) {
+        ReviewEntity existingReviewEntity = reviewStorage.findById(dto.getReviewId());
+        if (!existingReviewEntity.getUserId().equals(dto.getUserId())) {
             throw new IncorrectParameterException("Нельзя изменить пользователя, оставившего отзыв");
         }
-        existingReview.setContent(dto.getContent());
-        existingReview.setPositive(dto.getPositive());
-        existingReview.setFilmId(dto.getFilmId());
-        Review updatedReview = reviewStorage.update(existingReview);
+        existingReviewEntity.setContent(dto.getContent());
+        existingReviewEntity.setPositive(dto.getPositive());
+        existingReviewEntity.setFilmId(dto.getFilmId());
+        ReviewEntity updatedReviewEntity = reviewStorage.update(existingReviewEntity);
         feedService.addEvent(
-                updatedReview.getUserId(),
+                updatedReviewEntity.getUserId(),
                 "REVIEW",
                 "UPDATE",
-                updatedReview.getReviewId()
+                updatedReviewEntity.getReviewId()
         );
-        return updatedReview;
+        return updatedReviewEntity;
     }
 
     public void delete(int id) {
-        Review review = reviewStorage.findById(id);
+        ReviewEntity reviewEntity = reviewStorage.findById(id);
         reviewStorage.delete(id);
         feedService.addEvent(
-                review.getUserId(),
+                reviewEntity.getUserId(),
                 "REVIEW",
                 "REMOVE",
-                review.getReviewId()
+                reviewEntity.getReviewId()
         );
     }
 
-    public List<Review> getAll(Integer filmId, Integer count) {
+    public List<ReviewEntity> getAll(Integer filmId, Integer count) {
         if (filmId != null) {
             filmStorage.findById(filmId);
         }

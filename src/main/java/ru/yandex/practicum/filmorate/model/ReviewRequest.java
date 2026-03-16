@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReviewDto {
+public class ReviewRequest {
     private Integer reviewId;
     @NotBlank
     private String content;

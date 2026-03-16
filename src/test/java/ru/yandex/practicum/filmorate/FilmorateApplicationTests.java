@@ -634,7 +634,7 @@ class FilmorateApplicationTests {
     void shouldCreateReview() {
         User savedUser = userStorage.create(user1);
         Film savedFilm = filmStorage.create(film1);
-        Review review = new Review(
+        ReviewEntity reviewEntity = new ReviewEntity(
                 null,
                 "Great film",
                 true,
@@ -642,9 +642,9 @@ class FilmorateApplicationTests {
                 savedFilm.getId(),
                 0
         );
-        Review created = reviewStorage.create(review);
+        ReviewEntity created = reviewStorage.create(reviewEntity);
         assertNotNull(created.getReviewId());
-        Review found = reviewStorage.findById(created.getReviewId());
+        ReviewEntity found = reviewStorage.findById(created.getReviewId());
         assertEquals("Great film", found.getContent());
         assertEquals(savedUser.getId(), found.getUserId());
         assertEquals(savedFilm.getId(), found.getFilmId());
@@ -654,12 +654,12 @@ class FilmorateApplicationTests {
     void shouldUpdateReview() {
         User savedUser = userStorage.create(user1);
         Film savedFilm = filmStorage.create(film1);
-        Review review = reviewStorage.create(
-                new Review(null, "Bad film", false, savedUser.getId(), savedFilm.getId(), 0)
+        ReviewEntity reviewEntity = reviewStorage.create(
+                new ReviewEntity(null, "Bad film", false, savedUser.getId(), savedFilm.getId(), 0)
         );
-        review.setContent("Very good film");
-        review.setPositive(true);
-        Review updated = reviewStorage.update(review);
+        reviewEntity.setContent("Very good film");
+        reviewEntity.setPositive(true);
+        ReviewEntity updated = reviewStorage.update(reviewEntity);
         assertEquals("Very good film", updated.getContent());
         assertTrue(updated.getPositive());
     }
@@ -668,22 +668,22 @@ class FilmorateApplicationTests {
     void shouldDeleteReview() {
         User savedUser = userStorage.create(user1);
         Film savedFilm = filmStorage.create(film1);
-        Review review = reviewStorage.create(
-                new Review(null, "Delete me", true, savedUser.getId(), savedFilm.getId(), 0)
+        ReviewEntity reviewEntity = reviewStorage.create(
+                new ReviewEntity(null, "Delete me", true, savedUser.getId(), savedFilm.getId(), 0)
         );
-        reviewStorage.delete(review.getReviewId());
+        reviewStorage.delete(reviewEntity.getReviewId());
         assertThrows(ObjectNotFoundException.class,
-                () -> reviewStorage.findById(review.getReviewId()));
+                () -> reviewStorage.findById(reviewEntity.getReviewId()));
     }
 
     @Test
     void shouldReturnReviewsForFilm() {
         User savedUser = userStorage.create(user1);
         Film savedFilm = filmStorage.create(film1);
-        reviewStorage.create(new Review(null, "Review1", true, savedUser.getId(), savedFilm.getId(), 0));
-        reviewStorage.create(new Review(null, "Review2", false, savedUser.getId(), savedFilm.getId(), 0));
-        List<Review> reviews = reviewStorage.getAll(savedFilm.getId(), 10);
-        assertEquals(2, reviews.size());
+        reviewStorage.create(new ReviewEntity(null, "Review1", true, savedUser.getId(), savedFilm.getId(), 0));
+        reviewStorage.create(new ReviewEntity(null, "Review2", false, savedUser.getId(), savedFilm.getId(), 0));
+        List<ReviewEntity> reviewEntities = reviewStorage.getAll(savedFilm.getId(), 10);
+        assertEquals(2, reviewEntities.size());
     }
 
     @Test
@@ -691,11 +691,11 @@ class FilmorateApplicationTests {
         User savedUser = userStorage.create(user1);
         User secondUser = userStorage.create(user2);
         Film savedFilm = filmStorage.create(film1);
-        Review review = reviewStorage.create(
-                new Review(null, "Nice film", true, savedUser.getId(), savedFilm.getId(), 0)
+        ReviewEntity reviewEntity = reviewStorage.create(
+                new ReviewEntity(null, "Nice film", true, savedUser.getId(), savedFilm.getId(), 0)
         );
-        reviewStorage.addLike(review.getReviewId(), secondUser.getId());
-        Review updated = reviewStorage.findById(review.getReviewId());
+        reviewStorage.addLike(reviewEntity.getReviewId(), secondUser.getId());
+        ReviewEntity updated = reviewStorage.findById(reviewEntity.getReviewId());
         assertEquals(1, updated.getUseful());
     }
 
@@ -704,11 +704,11 @@ class FilmorateApplicationTests {
         User savedUser = userStorage.create(user1);
         User secondUser = userStorage.create(user2);
         Film savedFilm = filmStorage.create(film1);
-        Review review = reviewStorage.create(
-                new Review(null, "Bad film", false, savedUser.getId(), savedFilm.getId(), 0)
+        ReviewEntity reviewEntity = reviewStorage.create(
+                new ReviewEntity(null, "Bad film", false, savedUser.getId(), savedFilm.getId(), 0)
         );
-        reviewStorage.addDislike(review.getReviewId(), secondUser.getId());
-        Review updated = reviewStorage.findById(review.getReviewId());
+        reviewStorage.addDislike(reviewEntity.getReviewId(), secondUser.getId());
+        ReviewEntity updated = reviewStorage.findById(reviewEntity.getReviewId());
         assertEquals(-1, updated.getUseful());
     }
 
@@ -717,12 +717,12 @@ class FilmorateApplicationTests {
         User savedUser = userStorage.create(user1);
         User secondUser = userStorage.create(user2);
         Film savedFilm = filmStorage.create(film1);
-        Review review = reviewStorage.create(
-                new Review(null, "Nice film", true, savedUser.getId(), savedFilm.getId(), 0)
+        ReviewEntity reviewEntity = reviewStorage.create(
+                new ReviewEntity(null, "Nice film", true, savedUser.getId(), savedFilm.getId(), 0)
         );
-        reviewStorage.addLike(review.getReviewId(), secondUser.getId());
-        reviewStorage.deleteLike(review.getReviewId(), secondUser.getId());
-        Review updated = reviewStorage.findById(review.getReviewId());
+        reviewStorage.addLike(reviewEntity.getReviewId(), secondUser.getId());
+        reviewStorage.deleteLike(reviewEntity.getReviewId(), secondUser.getId());
+        ReviewEntity updated = reviewStorage.findById(reviewEntity.getReviewId());
         assertEquals(0, updated.getUseful());
     }
 
@@ -731,12 +731,12 @@ class FilmorateApplicationTests {
         User savedUser = userStorage.create(user1);
         User secondUser = userStorage.create(user2);
         Film savedFilm = filmStorage.create(film1);
-        Review review = reviewStorage.create(
-                new Review(null, "Bad film", false, savedUser.getId(), savedFilm.getId(), 0)
+        ReviewEntity reviewEntity = reviewStorage.create(
+                new ReviewEntity(null, "Bad film", false, savedUser.getId(), savedFilm.getId(), 0)
         );
-        reviewStorage.addDislike(review.getReviewId(), secondUser.getId());
-        reviewStorage.deleteDislike(review.getReviewId(), secondUser.getId());
-        Review updated = reviewStorage.findById(review.getReviewId());
+        reviewStorage.addDislike(reviewEntity.getReviewId(), secondUser.getId());
+        reviewStorage.deleteDislike(reviewEntity.getReviewId(), secondUser.getId());
+        ReviewEntity updated = reviewStorage.findById(reviewEntity.getReviewId());
         assertEquals(0, updated.getUseful());
     }
 
@@ -745,12 +745,12 @@ class FilmorateApplicationTests {
         User savedUser = userStorage.create(user1);
         User secondUser = userStorage.create(user2);
         Film savedFilm = filmStorage.create(film1);
-        Review review = reviewStorage.create(
-                new Review(null, "Film", true, savedUser.getId(), savedFilm.getId(), 0)
+        ReviewEntity reviewEntity = reviewStorage.create(
+                new ReviewEntity(null, "Film", true, savedUser.getId(), savedFilm.getId(), 0)
         );
-        reviewStorage.addLike(review.getReviewId(), secondUser.getId());
-        reviewStorage.addDislike(review.getReviewId(), secondUser.getId());
-        Review updated = reviewStorage.findById(review.getReviewId());
+        reviewStorage.addLike(reviewEntity.getReviewId(), secondUser.getId());
+        reviewStorage.addDislike(reviewEntity.getReviewId(), secondUser.getId());
+        ReviewEntity updated = reviewStorage.findById(reviewEntity.getReviewId());
         assertEquals(-1, updated.getUseful());
     }
 
@@ -759,12 +759,12 @@ class FilmorateApplicationTests {
         User savedUser = userStorage.create(user1);
         User secondUser = userStorage.create(user2);
         Film savedFilm = filmStorage.create(film1);
-        Review review = reviewStorage.create(
-                new Review(null, "Film", true, savedUser.getId(), savedFilm.getId(), 0)
+        ReviewEntity reviewEntity = reviewStorage.create(
+                new ReviewEntity(null, "Film", true, savedUser.getId(), savedFilm.getId(), 0)
         );
-        reviewStorage.addDislike(review.getReviewId(), secondUser.getId());
-        reviewStorage.addLike(review.getReviewId(), secondUser.getId());
-        Review updated = reviewStorage.findById(review.getReviewId());
+        reviewStorage.addDislike(reviewEntity.getReviewId(), secondUser.getId());
+        reviewStorage.addLike(reviewEntity.getReviewId(), secondUser.getId());
+        ReviewEntity updated = reviewStorage.findById(reviewEntity.getReviewId());
         assertEquals(1, updated.getUseful());
     }
 
