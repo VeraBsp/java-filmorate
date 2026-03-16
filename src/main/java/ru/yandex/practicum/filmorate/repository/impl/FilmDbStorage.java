@@ -767,6 +767,87 @@ public class FilmDbStorage implements FilmStorage {
         }, params.toArray());
     }
 
+    @Override
+    public List<Film> getRecommendations(int id) {
+        String sql = """
+                SELECT
+                    f.film_id,
+                    f.film_name,
+                    f.description,
+                    f.release_date,
+                    f.duration,
+                    r.rating_id,
+                    r.rating_title,
+                    g.genre_id,
+                    g.genre_title,
+                    d.director_id,
+                    d.director_name
+                FROM films f
+                JOIN film_like fl ON f.film_id = fl.film_id
+                LEFT JOIN rating r ON f.rating_id = r.rating_id
+                LEFT JOIN film_genre fg ON f.film_id = fg.film_id
+                LEFT JOIN genres g ON fg.genre_id = g.genre_id
+                LEFT JOIN film_director fd ON f.film_id = fd.film_id
+                LEFT JOIN directors d ON fd.director_id = d.director_id
+                WHERE fl.user_id = (
+                    SELECT fl2.user_id
+                    FROM film_like fl1
+                    JOIN film_like fl2 ON fl1.film_id = fl2.film_id
+                    WHERE fl1.user_id = ?
+                      AND fl2.user_id != ?
+                    GROUP BY fl2.user_id
+                    ORDER BY COUNT(*) DESC
+                    LIMIT 1
+                )
+                AND f.film_id NOT IN (
+                    SELECT film_id
+                    FROM film_like
+                    WHERE user_id = ?
+                )
+                """;
+        return jdbcTemplate.query(sql, rs -> {
+            Map<Integer, Film> films = new LinkedHashMap<>();
+            while (rs.next()) {
+                int filmId = rs.getInt("film_id");
+                Film film = films.get(filmId);
+                if (film == null) {
+                    film = new Film();
+                    film.setId(filmId);
+                    film.setName(rs.getString("film_name"));
+                    film.setDescription(rs.getString("description"));
+                    film.setReleaseDate(rs.getDate("release_date").toLocalDate());
+                    film.setDuration(rs.getInt("duration"));
+
+                    int ratingId = rs.getInt("rating_id");
+                    if (!rs.wasNull()) {
+                        film.setMpa(new Rating(
+                                ratingId,
+                                rs.getString("rating_title")
+                        ));
+                    }
+                    film.setGenres(new LinkedHashSet<>());
+                    film.setDirectors(new LinkedHashSet<>());
+                    films.put(filmId, film);
+                }
+                int genreId = rs.getInt("genre_id");
+                if (!rs.wasNull()) {
+                    film.getGenres().add(new Genre(
+                            genreId,
+                            rs.getString("genre_title")
+                    ));
+                }
+                int directorId = rs.getInt("director_id");
+                if (!rs.wasNull()) {
+                    film.getDirectors().add(new Director(
+                            directorId,
+                            rs.getString("director_name")
+                    ));
+                }
+            }
+            return new ArrayList<>(films.values());
+        }, id, id, id);
+    }
+
     private void validateGenreExists(int genreId) {
         String sql = "SELECT COUNT(*) FROM genres WHERE genre_id = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, genreId);

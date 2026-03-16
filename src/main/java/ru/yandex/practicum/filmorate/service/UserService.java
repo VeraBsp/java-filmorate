@@ -3,7 +3,9 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.repository.FilmStorage;
 import ru.yandex.practicum.filmorate.repository.UserStorage;
 
 import java.util.List;
@@ -13,11 +15,13 @@ public class UserService {
 
     private final UserStorage userStorage;
     private final FeedService feedService;
+    private final FilmStorage filmStorage;
 
     @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage, FeedService feedService) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage, @Qualifier("filmDbStorage") FilmStorage filmStorage, FeedService feedService) {
         this.userStorage = userStorage;
         this.feedService = feedService;
+        this.filmStorage = filmStorage;
     }
 
     public List<User> getAll() {
@@ -56,5 +60,10 @@ public class UserService {
 
     public List<User> getCommonFriends(int userId, int otherId) {
         return userStorage.getCommonFriends(userId, otherId);
+    }
+
+    public List<Film> getRecommendations(int id) {
+        userStorage.findById(id);
+        return filmStorage.getRecommendations(id);
     }
 }
