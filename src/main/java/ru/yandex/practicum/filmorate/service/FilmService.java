@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.repository.DirectorStorage;
 import ru.yandex.practicum.filmorate.repository.FilmStorage;
@@ -43,25 +44,6 @@ public class FilmService {
         return filmStorage.update(film);
     }
 
-    public Film addLikeFilm(int filmId, int userId) {
-        filmStorage.findById(filmId);
-        userStorage.findById(userId);
-        Film film = filmStorage.addLikeFilm(filmId, userId);
-        feedService.addEvent(userId, "LIKE", "ADD", filmId);
-        return film;
-    }
-
-    public void deleteLikeFilm(int id, int userId) {
-        filmStorage.findById(id);
-        userStorage.findById(userId);
-        filmStorage.deleteLikeFilm(id, userId);
-        feedService.addEvent(userId, "LIKE", "REMOVE", id);
-    }
-
-    public List<Film> getPopularFilm(int count) {
-        return filmStorage.getPopularFilm(count);
-    }
-
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
         userStorage.findById(userId);
         userStorage.findById(friendId);
@@ -96,5 +78,21 @@ public class FilmService {
             return filmStorage.getPopularFilm(count);
         }
         return filmStorage.getMostPopularFilm(year, genreId, count);
+    }
+
+    public Film addRateFilm(int id, int userId, int rate) {
+        if (rate < 1 || rate > 10) {
+            throw new IncorrectParameterException("Оценка должна быть от 1 до 10");
+        }
+        filmStorage.findById(id);
+        userStorage.findById(userId);
+        return filmStorage.addRateFilm(id, userId, rate);
+
+    }
+
+    public void deleteRateFilm(int id, int userId) {
+        filmStorage.findById(id);
+        userStorage.findById(userId);
+        filmStorage.deleteRateFilm(id, userId);
     }
 }
