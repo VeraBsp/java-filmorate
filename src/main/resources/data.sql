@@ -30,7 +30,7 @@ INSERT INTO rating (rating_title) VALUES
 ('PG-13'),
 ('R'),
 ('NC-17');
-
+--
 --INSERT INTO films (film_name, description, duration, release_date, rating_id) VALUES
 --('Начало', 'Профессиональные воры проникают в сны, чтобы извлекать секреты.', 148, '2010-07-16', 3),
 --('Зеленая миля', 'История о необычном заключенном в блоке смертников.', 189, '1999-12-10', 4),
@@ -150,7 +150,7 @@ INSERT INTO rating (rating_title) VALUES
 INSERT INTO friends_status (friend_status_title) VALUES
 ('Запрос отправлен'),
 ('В друзьях');
-
+--
 --INSERT INTO friends (user_id, friend_id, friend_status_id) VALUES
 --(1, 2, 2), -- Иван и Мария в друзьях
 --(3, 2, 1), -- Петр и Мария друзья
