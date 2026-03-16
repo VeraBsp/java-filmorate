@@ -48,18 +48,6 @@ public class FilmController {
         return filmService.update(film);
     }
 
-    @PutMapping("{id}/like/{userId}")
-    public Film addLikeFilm(@PathVariable("id") int id, @PathVariable("userId") int userId) {
-        log.info("Получен запрос на добавление лайка фильму с id={}  от пользователя с userId={}", id, userId);
-        return filmService.addLikeFilm(id, userId);
-    }
-
-    @DeleteMapping("{id}/like/{userId}")
-    public void deleteLikeFilm(@PathVariable("id") int id, @PathVariable("userId") int userId) {
-        log.info("Получен запрос на удаление лайка фильму с id={}  от пользователя с userId={}", id, userId);
-        filmService.deleteLikeFilm(id, userId);
-    }
-
     @GetMapping("/popular")
     public List<Film> getPopularFilms(
             @RequestParam(required = false) Integer genreId,
@@ -100,5 +88,30 @@ public class FilmController {
     public List<Film> sortByDirectorAndTitle(@RequestParam String query,
                                              @RequestParam(defaultValue = "title") String by) {
         return filmService.searchFilms(query, by);
+    }
+
+    @PutMapping("{id}/rate/{userId}")
+    public Film addRatingFilm(
+            @PathVariable("id") int id,
+            @PathVariable("userId") int userId,
+            @RequestParam("rate") int rate) {
+
+        log.info(
+                "Получен запрос на оценку фильма id={} пользователем id={} со score={}",
+                id, userId, rate
+        );
+
+        return filmService.addRateFilm(id, userId, rate);
+    }
+
+    @DeleteMapping("{id}/rate/{userId}")
+    public void deleteRatingFilm(
+            @PathVariable("id") int id,
+            @PathVariable("userId") int userId) {
+        log.info(
+                "Получен запрос на удаление оценки фильма id={} пользователем id={}",
+                id, userId
+        );
+        filmService.deleteRateFilm(id, userId);
     }
 }

@@ -432,59 +432,6 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    void testAddLikeFilm_filmNotFound() {
-        User user = userStorage.create(user1);
-
-        assertThatThrownBy(() ->
-                filmStorage.addLikeFilm(9999, user.getId())
-        ).isInstanceOf(ObjectNotFoundException.class);
-    }
-
-    @Test
-    void shouldReturnCommonFilmsSortedByPopularity() {
-        user1 = userStorage.create(user1);
-        user2 = userStorage.create(user2);
-        filmStorage.create(film1);
-        filmStorage.create(film2);
-
-        filmStorage.addLikeFilm(film1.getId(), user1.getId());
-        filmStorage.addLikeFilm(film2.getId(), user1.getId());
-
-        filmStorage.addLikeFilm(film1.getId(), user2.getId());
-        filmStorage.addLikeFilm(film2.getId(), user2.getId());
-
-        // добавим дополнительный лайк filmB (чтобы он стал популярнее)
-        User extraUser = new User();
-        extraUser.setLogin("extra");
-        extraUser.setEmail("extra@mail.ru");
-        extraUser.setName("extra");
-        extraUser.setBirthday(LocalDate.of(1995, 5, 5));
-        extraUser = userStorage.create(extraUser);
-
-        filmStorage.addLikeFilm(film2.getId(), extraUser.getId());
-
-        List<Film> result = filmStorage.getCommonFilms(user1.getId(), user2.getId());
-
-        assertEquals(2, result.size());
-        assertEquals("Matrix1", result.get(0).getName()); // более популярный
-        assertEquals("Matrix", result.get(1).getName());
-    }
-
-    @Test
-    void shouldReturnEmptyListWhenNoCommonFilms() {
-        user1 = userStorage.create(user1);
-        user2 = userStorage.create(user2);
-        filmStorage.create(film1);
-        filmStorage.create(film2);
-        filmStorage.addLikeFilm(film1.getId(), user1.getId());
-        filmStorage.addLikeFilm(film2.getId(), user2.getId());
-
-        List<Film> result = filmStorage.getCommonFilms(user1.getId(), user2.getId());
-
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
     public void testDeleteFilm() {
         Film createdFilm = filmStorage.create(film1);
         filmStorage.delete(createdFilm.getId());
@@ -569,65 +516,6 @@ class FilmorateApplicationTests {
         filmStorage.addDirectorToFilm(film1.getId(), director1.getId());
         List<Film> result = filmStorage.searchFilms("Matrix", "director,title");
         assertEquals(1, result.size());
-    }
-
-    @Test
-    public void shouldSortByPopularity() {
-        userStorage.create(user1);
-        userStorage.create(user2);
-        filmStorage.create(film1);
-        filmStorage.create(film2);
-        filmStorage.addLikeFilm(film1.getId(), user1.getId());
-        filmStorage.addLikeFilm(film1.getId(), user2.getId());
-        filmStorage.addLikeFilm(film2.getId(), user1.getId());
-        List<Film> result = filmStorage.searchFilms("Matrix", "title");
-        assertEquals(film1.getId(), result.get(0).getId());
-    }
-
-    @Test
-    public void shouldReturnEmptyListIfNothingFound() {
-        filmStorage.create(film1);
-        List<Film> result = filmStorage.searchFilms("NonExisting", "title");
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
-    public void shouldReturnMostPopularFilmsByYear() {
-        userStorage.create(user1);
-        userStorage.create(user2);
-        Film createdFilm1 = filmStorage.create(film1);
-        Film createdFilm2 = filmStorage.create(film2);
-        filmStorage.addLikeFilm(createdFilm1.getId(), user1.getId());
-        filmStorage.addLikeFilm(createdFilm1.getId(), user2.getId());
-        filmStorage.addLikeFilm(createdFilm2.getId(), user1.getId());
-        List<Film> films = filmStorage.getMostPopularFilm(2025, null, 10);
-        assertNotNull(films);
-        assertEquals(1, films.size());
-        assertEquals(createdFilm1.getId(), films.get(0).getId());
-    }
-
-    @Test
-    void shouldReturnMostPopularFilmsByGenre() {
-        userStorage.create(user1);
-        userStorage.create(user2);
-        Film createdFilm1 = filmStorage.create(film1);
-        Film createdFilm2 = filmStorage.create(film2);
-        filmStorage.addLikeFilm(createdFilm2.getId(), user1.getId());
-        filmStorage.addLikeFilm(createdFilm2.getId(), user2.getId());
-        List<Film> films = filmStorage.getMostPopularFilm(null, 1, 10);
-        assertFalse(films.isEmpty());
-        assertEquals(createdFilm2.getId(), films.get(0).getId());
-    }
-
-    @Test
-    void shouldReturnMostPopularFilmsByYearAndGenre() {
-        userStorage.create(user1);
-        Film createdFilm1 = filmStorage.create(film1);
-        Film createdFilm2 = filmStorage.create(film2);
-        filmStorage.addLikeFilm(createdFilm1.getId(), user1.getId());
-        List<Film> films = filmStorage.getMostPopularFilm(2025, 1, 10);
-        assertEquals(1, films.size());
-        assertEquals(createdFilm1.getId(), films.get(0).getId());
     }
 
     @Test

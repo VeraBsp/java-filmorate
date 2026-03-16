@@ -13,11 +13,7 @@ public interface FilmStorage {
 
     Film findById(int filmId);
 
-    Film addLikeFilm(int filmId, int userId);
-
     void checkFieldsFilm(Film film);
-
-    void deleteLikeFilm(Integer id, Integer userId);
 
     List<Film> getPopularFilm(int count);
 
@@ -36,5 +32,9 @@ public interface FilmStorage {
     List<Film> getMostPopularFilm(Integer year, Integer genreId, Integer count);
 
     List<Film> getRecommendations(int id);
+
+    Film addRateFilm(int id, int userId, int rate);
+
+    void deleteRateFilm(int id, int userId);
 }
 
