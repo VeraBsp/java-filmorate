@@ -1,7 +1,7 @@
 --INSERT INTO users (name, email, login, birthday) VALUES ('Иван', 'ivan@example.com', 'ivan_login', '1990-01-15');
 --INSERT INTO users (name, email, login, birthday) VALUES ('Мария', 'maria@example.com', 'maria_login', '1985-05-22');
 --INSERT INTO users (name, email, login, birthday) VALUES ('Петр', 'petr@example.com', 'petr_login', '2000-11-30');
---
+
 INSERT INTO genres (genre_title) VALUES ('Комедия'),
                                         ('Драма'),
                                         ('Мультфильм'),
@@ -23,7 +23,7 @@ INSERT INTO genres (genre_title) VALUES ('Комедия'),
 --('Роджер Аллерс'),
 --('Роб Минкофф'),
 --('Питер Фаррелли');
---
+
 INSERT INTO rating (rating_title) VALUES
 ('G'),
 ('PG'),
@@ -146,11 +146,11 @@ INSERT INTO rating (rating_title) VALUES
 --
 ---- Зеленая книга
 --(14, 13);
---
+
 INSERT INTO friends_status (friend_status_title) VALUES
 ('Запрос отправлен'),
 ('В друзьях');
---
+
 --INSERT INTO friends (user_id, friend_id, friend_status_id) VALUES
 --(1, 2, 2), -- Иван и Мария в друзьях
 --(3, 2, 1), -- Петр и Мария друзья

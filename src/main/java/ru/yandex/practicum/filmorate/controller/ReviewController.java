@@ -5,7 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.ReviewEntity;
+import ru.yandex.practicum.filmorate.model.ReviewRequest;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
 import java.util.List;
@@ -22,21 +23,21 @@ public class ReviewController {
     }
 
     @PostMapping
-    public Review create(@Valid @RequestBody Review review) {
+    public ReviewEntity create(@Valid @RequestBody ReviewRequest reviewRequest) {
         log.info("Получен запрос на создание отзыва");
-        return reviewService.create(review);
+        return reviewService.create(reviewRequest);
     }
 
     @GetMapping("{id}")
-    public Review findById(@PathVariable("id") int id) {
+    public ReviewEntity findById(@PathVariable("id") int id) {
         log.info("Сформирован запрос на получение отзыва с id={}", id);
         return reviewService.findById(id);
     }
 
     @PutMapping
-    public Review update(@Valid @RequestBody Review review) {
-        log.info("Получен запрос на обновление отзыва id={}", review.getReviewId());
-        return reviewService.update(review);
+    public ReviewEntity update(@Valid @RequestBody ReviewRequest reviewRequest) {
+        log.info("Получен запрос на обновление отзыва id={}", reviewRequest.getReviewId());
+        return reviewService.update(reviewRequest);
     }
 
     @DeleteMapping("{id}")
@@ -46,7 +47,7 @@ public class ReviewController {
     }
 
     @GetMapping
-    public List<Review> getReviews(
+    public List<ReviewEntity> getReviews(
             @RequestParam(required = false) Integer filmId,
             @RequestParam(defaultValue = "10") Integer count) {
 

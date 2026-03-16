@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -11,17 +10,16 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Review {
+public class Feed {
     @Positive
-    private Integer reviewId;
+    private Integer eventId;
     @NotBlank
-    private String content;
-    @NotNull
-    @JsonProperty("isPositive")
-    private Boolean positive;
+    private String eventType;
+    @NotBlank
+    private String operation;
+    private long timestamp;
     @NotNull
     private Integer userId;
     @NotNull
-    private Integer filmId;
-    private int useful;
+    private Integer entityId;
 }

@@ -5,7 +5,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.FeedService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
@@ -15,11 +17,13 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
+    private final FeedService feedService;
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, FeedService feedService) {
         this.userService = userService;
+        this.feedService = feedService;
     }
 
     @GetMapping
@@ -74,5 +78,10 @@ public class UserController {
     public List<User> getCommonFriends(@PathVariable("id") int id, @PathVariable("otherId") int otherId) {
         log.info("Получен запрос на выборку общих друзей пользователей с id={} и id={}", id, otherId);
         return userService.getCommonFriends(id, otherId);
+    }
+
+    @GetMapping("{id}/feed")
+    public List<Feed> getFeedEvents(@PathVariable("id") int id) {
+        return feedService.getFeed(id);
     }
 }
