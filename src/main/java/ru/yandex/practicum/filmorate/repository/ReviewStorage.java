@@ -1,19 +1,19 @@
 package ru.yandex.practicum.filmorate.repository;
 
-import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.ReviewEntity;
 
 import java.util.List;
 
 public interface ReviewStorage {
-    Review create(Review review);
+    ReviewEntity create(ReviewEntity reviewEntity);
 
-    Review findById(int id);
+    ReviewEntity findById(int id);
 
-    Review update(Review review);
+    ReviewEntity update(ReviewEntity reviewEntity);
 
     void delete(int id);
 
-    List<Review> getAll(Integer filmId, Integer count);
+    List<ReviewEntity> getAll(Integer filmId, Integer count);
 
     void addLike(int id, int userId);
 

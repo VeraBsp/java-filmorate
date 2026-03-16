@@ -14,11 +14,13 @@ import java.util.List;
 public class UserService {
 
     private final UserStorage userStorage;
+    private final FeedService feedService;
     private final FilmStorage filmStorage;
 
     @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage, @Qualifier("filmDbStorage") FilmStorage filmStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage, @Qualifier("filmDbStorage") FilmStorage filmStorage, FeedService feedService) {
         this.userStorage = userStorage;
+        this.feedService = feedService;
         this.filmStorage = filmStorage;
     }
 
@@ -44,6 +46,7 @@ public class UserService {
 
     public void addFriend(int userId, int friendId) {
         userStorage.addFriends(userId, friendId);
+        feedService.addEvent(userId, "FRIEND", "ADD", friendId);
     }
 
     public List<User> getFriendsThisUser(Integer userId) {
@@ -52,6 +55,7 @@ public class UserService {
 
     public void deleteFriends(int userId, int friendId) {
         userStorage.deleteFriends(userId, friendId);
+        feedService.addEvent(userId, "FRIEND", "REMOVE", friendId);
     }
 
     public List<User> getCommonFriends(int userId, int otherId) {

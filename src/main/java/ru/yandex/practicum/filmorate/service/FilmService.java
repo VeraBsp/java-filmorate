@@ -15,14 +15,16 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
     private final DirectorStorage directorStorage;
+    private final FeedService feedService;
 
     @Autowired
     public FilmService(
             @Qualifier("filmDbStorage") FilmStorage filmStorage,
-            @Qualifier("userDbStorage") UserStorage userStorage, DirectorStorage directorStorage) {
+            @Qualifier("userDbStorage") UserStorage userStorage, DirectorStorage directorStorage, FeedService feedService) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.directorStorage = directorStorage;
+        this.feedService = feedService;
     }
 
     public Film create(Film film) {
@@ -44,13 +46,16 @@ public class FilmService {
     public Film addLikeFilm(int filmId, int userId) {
         filmStorage.findById(filmId);
         userStorage.findById(userId);
-        return filmStorage.addLikeFilm(filmId, userId);
+        Film film = filmStorage.addLikeFilm(filmId, userId);
+        feedService.addEvent(userId, "LIKE", "ADD", filmId);
+        return film;
     }
 
     public void deleteLikeFilm(int id, int userId) {
         filmStorage.findById(id);
         userStorage.findById(userId);
         filmStorage.deleteLikeFilm(id, userId);
+        feedService.addEvent(userId, "LIKE", "REMOVE", id);
     }
 
     public List<Film> getPopularFilm(int count) {

@@ -150,7 +150,7 @@ INSERT INTO rating (rating_title) VALUES
 INSERT INTO friends_status (friend_status_title) VALUES
 ('Запрос отправлен'),
 ('В друзьях');
---
+
 --INSERT INTO friends (user_id, friend_id, friend_status_id) VALUES
 --(1, 2, 2), -- Иван и Мария в друзьях
 --(3, 2, 1), -- Петр и Мария друзья
